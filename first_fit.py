@@ -38,10 +38,15 @@ class OpticalNetwork:
         return slots
 
     def is_slot_reserved(self, slot, source, destination):
-        return (
-            slot in self.network_state[source]
-            or slot in self.network_state[destination]
-        )
+        if source in self.network_state and destination in self.network_state:
+            return (
+                slot in self.network_state[source]
+                or slot in self.network_state[destination]
+            )
+        else:
+            self.network_state[source] = set()
+            self.network_state[destination] = set()
+            return False
 
     def reserve_slots(self, source, destination, start_slot, end_slot):
         for slot in range(start_slot, end_slot + 1):
@@ -60,7 +65,7 @@ class OpticalNetwork:
         return data
 
 
-optical_network = OpticalNetwork(num_slots=50)
+optical_network = OpticalNetwork(num_slots=100)
 
 results = optical_network.allocate_requests()
 for result in results:
