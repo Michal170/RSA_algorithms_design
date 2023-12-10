@@ -16,7 +16,6 @@ class OpticalNetwork:
         return results
 
     def first_fit_allocation(self, source, destination, bitrate):
-        # required_slots = 6
         required_slots = self.calculate_required_slots(bitrate)
 
         for start_slot in range(self.num_slots - required_slots + 1):
@@ -39,18 +38,10 @@ class OpticalNetwork:
         return slots
 
     def is_slot_reserved(self, slot, source, destination):
-        # return any(
-        #     slot in reserved_slots for reserved_slots in self.network_state.values()
-        # )
         return (
             slot in self.network_state[source]
             or slot in self.network_state[destination]
         )
-
-    # def reserve_slots(self, start_slot, end_slot):
-    #     for slot in range(start_slot, end_slot + 1):
-    #         for reserved_slots in self.network_state.values():
-    #             reserved_slots.add(slot)
 
     def reserve_slots(self, source, destination, start_slot, end_slot):
         for slot in range(start_slot, end_slot + 1):
@@ -69,19 +60,8 @@ class OpticalNetwork:
         return data
 
 
-# filename = "requests.csv"
 optical_network = OpticalNetwork(num_slots=50)
-# requests = read_data()
-# print(type(requests))
-# requests = [
-#     ("A", "B", 10),
-#     ("C", "D", 5),
-#     ("A", "G", 5),
-#     # Dodaj więcej żądań według potrzeb
-# ]
 
 results = optical_network.allocate_requests()
 for result in results:
     print(result)
-
-# Jak mamy source np '25' a cle '7' i '8' to co jak liczymy sloty?
