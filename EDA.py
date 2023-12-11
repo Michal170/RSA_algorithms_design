@@ -1,18 +1,9 @@
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+from helpers.import_data import import_data
 
 
-def import_data(data_dir: str) -> np.array:
-    data = []
-    dirs = os.listdir(data_dir)
-    for i in dirs:
-        if  os.path.isdir(os.path.join(data_dir, i)):
-            d_part = []
-            for d in os.listdir(os.path.join(data_dir, i)):
-                d_part.append(np.genfromtxt(os.path.join(data_dir, i, d)))
-            data.append(d_part)
-    return np.array(data)
 
 
 if __name__ == "__main__":
