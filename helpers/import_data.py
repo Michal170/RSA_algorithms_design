@@ -1,11 +1,11 @@
 import numpy as np
 import os
 
-def import_data(data_dir: str) -> np.array:
+def import_data(demand_dir: str) -> np.array:
     """Import data from typed directory
 
     Args:
-        data_dir (str): Directory where data are stored
+        demand_dir (str): Directory where data are stored
 
     Returns:
         np.array: Data from directory
@@ -18,12 +18,8 @@ def import_data(data_dir: str) -> np.array:
         X = import_data(dir)
     """    
     data = []
-    dirs = os.listdir(data_dir)
-    for i in dirs:
-        if  os.path.isdir(os.path.join(data_dir, i)):
-            d_part = []
-            for d in os.listdir(os.path.join(data_dir, i)):
-                d_part.append(np.genfromtxt(os.path.join(data_dir, i, d)))
-            data.append(d_part)
-            
+    dir = os.listdir(demand_dir)
+    for d in dir:
+        data.append(np.genfromtxt(os.path.join(demand_dir, d)))
+
     return np.array(data)
