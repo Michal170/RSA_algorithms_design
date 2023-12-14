@@ -10,7 +10,8 @@ class OpticalNetwork:
         self.node = node
         self.slot_matrix = []
         self.path_index = path_index
-        self.path_matrix = PathStore.load_data("POL12/pol12.pat")
+        self.path_matrix = PathStore.load_data("./POL12/pol12.pat")
+        print(np.shape(self.path_matrix))
         self.requests_matrix = Edge.load_data("./POL12/demands_0")
 
     def allocate_requests(self):
@@ -21,6 +22,7 @@ class OpticalNetwork:
                 int(request[0]), int(request[1])
             )
             self.path_nodes = self.find_path(number_index)
+            print(self.path_nodes)
         return self.slot_matrix
 
     def calcute_path_matrix_number(self, source: int, destination: int) -> int:
@@ -32,14 +34,17 @@ class OpticalNetwork:
 
     def find_path(self, path_matrix_number: int) -> list:
         for k in self.path_matrix[path_matrix_number]:
+            edges = np.shape(self.path_matrix)
             path_nodes = []
-            for x in range(36):
+            for x in range(edges[2]):
                 if k[x] == 1:
                     temp_list = self.path_index[x]
                     for node in range(len(temp_list)):
                         if temp_list[node] not in path_nodes:
                             path_nodes.append(temp_list[node])
         return path_nodes
+
+    # def is_reserved(self,)
 
 
 #     def __init__(self, num_slots):
@@ -109,7 +114,7 @@ if __name__ == "__main__":
     node = 11
     algorithm = OpticalNetwork(node)
     result = algorithm.allocate_requests()
-    # print("SH:", np.shape(result))
+    # print(result)
 
 # optical_network = OpticalNetwork(num_slots=100)
 
