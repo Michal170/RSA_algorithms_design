@@ -1,16 +1,48 @@
 import csv
 import numpy as np
 from paths import PathStore
+from demands import Edge
+from helpers.path_names import paths_names
 
 
 class OpticalNetwork:
-    def __init__(self) -> None:
-        self.slot_matrix = [[0 for _ in range(320)] for _ in range(11)]
+    def __init__(self, node) -> None:
+        self.node = node
+        self.slot_matrix = []
+        # self.slot_matrix = [[0 for _ in range(320)] for _ in range(11)]
         self.path_matrix = PathStore.load_data("POL12/pol12.pat")
+        self.requests_matrix = Edge.load_data("./POL12/demands_0")
 
     def allocate_requests(self):
-        print(self.path_matrix)
+        self.slot_matrix = [[0 for _ in range(320)] for _ in range(self.node)]
+        print("request_matrix:", np.shape(self.requests_matrix))
+        print("Path_matrix:", np.shape(self.path_matrix))
+        print("slot_matrix:", np.shape(self.slot_matrix))
+        for request in self.requests_matrix:
+            source = int(request[0])
+            destination = int(request[1])
+            print("Source", source, "Destination", destination)
+            number_index = self.calcute_path_matrix_number(source, destination)
+            self.find_path(number_index)
+            break
         return self.slot_matrix
+
+    def calcute_path_matrix_number(self, source: int, destination: int) -> int:
+        if source > destination:
+            path_matrix_number = self.node * source + destination
+        else:
+            path_matrix_number = self.node * source + destination - 1
+        return path_matrix_number
+
+    def find_path(self, path_matrix_number: int):
+        for k in self.path_matrix[path_matrix_number]:
+            # paths = [paths_names[x] for x in range(36) if k[x] == 1]
+            # print(paths)
+            for x in range(36):
+                if k[x] == 1:
+                    print(x)
+            print("------", "\n", "Krawędzie w wybranej ścieżce:")
+            # print(k)
 
 
 #     def __init__(self, num_slots):
@@ -77,9 +109,10 @@ class OpticalNetwork:
 
 
 if __name__ == "__main__":
-    algorithm = OpticalNetwork()
+    node = 11
+    algorithm = OpticalNetwork(node)
     result = algorithm.allocate_requests()
-    print("SH:", np.shape(result))
+    # print("SH:", np.shape(result))
 
 # optical_network = OpticalNetwork(num_slots=100)
 
