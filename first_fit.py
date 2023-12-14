@@ -2,29 +2,25 @@ import csv
 import numpy as np
 from paths import PathStore
 from demands import Edge
-from helpers.path_names import paths_names
+from helpers.path_names import paths_names, path_index
 
 
 class OpticalNetwork:
     def __init__(self, node) -> None:
         self.node = node
         self.slot_matrix = []
-        # self.slot_matrix = [[0 for _ in range(320)] for _ in range(11)]
+        self.path_index = path_index
         self.path_matrix = PathStore.load_data("POL12/pol12.pat")
         self.requests_matrix = Edge.load_data("./POL12/demands_0")
 
     def allocate_requests(self):
         self.slot_matrix = [[0 for _ in range(320)] for _ in range(self.node)]
-        print("request_matrix:", np.shape(self.requests_matrix))
-        print("Path_matrix:", np.shape(self.path_matrix))
-        print("slot_matrix:", np.shape(self.slot_matrix))
+        self.path_nodes = []
         for request in self.requests_matrix:
-            source = int(request[0])
-            destination = int(request[1])
-            print("Source", source, "Destination", destination)
-            number_index = self.calcute_path_matrix_number(source, destination)
-            self.find_path(number_index)
-            break
+            number_index = self.calcute_path_matrix_number(
+                int(request[0]), int(request[1])
+            )
+            self.path_nodes = self.find_path(number_index)
         return self.slot_matrix
 
     def calcute_path_matrix_number(self, source: int, destination: int) -> int:
@@ -34,15 +30,16 @@ class OpticalNetwork:
             path_matrix_number = self.node * source + destination - 1
         return path_matrix_number
 
-    def find_path(self, path_matrix_number: int):
+    def find_path(self, path_matrix_number: int) -> list:
         for k in self.path_matrix[path_matrix_number]:
-            # paths = [paths_names[x] for x in range(36) if k[x] == 1]
-            # print(paths)
+            path_nodes = []
             for x in range(36):
                 if k[x] == 1:
-                    print(x)
-            print("------", "\n", "Krawędzie w wybranej ścieżce:")
-            # print(k)
+                    temp_list = self.path_index[x]
+                    for node in range(len(temp_list)):
+                        if temp_list[node] not in path_nodes:
+                            path_nodes.append(temp_list[node])
+        return path_nodes
 
 
 #     def __init__(self, num_slots):
