@@ -1,3 +1,4 @@
+# Hardcoded paths
 paths_names = [
     "Szczecin-Kołobrzeg",
     "Szczecin-Poznań", 

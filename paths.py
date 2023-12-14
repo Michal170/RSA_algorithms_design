@@ -40,4 +40,3 @@ if __name__ == "__main__":
     #print(dd)
 
     print(choose_num_slots(distance=1000, bitrate=340))
-        
