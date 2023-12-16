@@ -1,5 +1,5 @@
 # Hardcoded paths
-paths_names = [
+path_names = [
     "Szczecin-Kołobrzeg",
     "Szczecin-Poznań",
     "Kołobrzeg-Szczecin",
@@ -37,6 +37,7 @@ paths_names = [
     "Rzeszów-Białystok",
     "Rzeszów-Kraków",
 ]
+
 city_mapping = {
     "Szczecin": 0,
     "Kołobrzeg": 1,

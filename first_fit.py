@@ -1,8 +1,8 @@
 import csv
 import numpy as np
-from paths import PathStore
-from demands import Edge
-from helpers.path_names import paths_names, path_index
+from helpers.import_data import load_paths
+from edge import Edge
+from helpers.mappings import path_names, path_index
 
 
 class OpticalNetwork:
@@ -10,9 +10,9 @@ class OpticalNetwork:
         self.node = node
         self.slot_matrix = []
         self.path_index = path_index
-        self.path_matrix = PathStore.load_data("./POL12/pol12.pat")
+        self.path_matrix = load_paths("./POL12/pol12.pat")
         print(np.shape(self.path_matrix))
-        self.requests_matrix = Edge.load_data("./POL12/demands_0")
+        self.requests_matrix = load_paths("./POL12/demands_0")
 
     def allocate_requests(self):
         self.slot_matrix = [[0 for _ in range(320)] for _ in range(self.node)]

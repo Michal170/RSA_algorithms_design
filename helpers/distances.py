@@ -1,6 +1,6 @@
 import sys
 import numpy as np
-from helpers.path_names import paths_names
+from helpers.mappings import path_names
 
 def import_distances(path: str) -> np.array:
     data = np.loadtxt(path, dtype=int).flatten() 

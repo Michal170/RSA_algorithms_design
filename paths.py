@@ -1,42 +1,22 @@
 from unittest import case
 import numpy as np
 
-from helpers.path_names import paths_names
-
-class PathStore(object):
-    def __init__(self):
-        pass
-    
-    @staticmethod
-    def load_data(path: str) -> np.array:
-        X = np.loadtxt(path, dtype=int)    
-        length = int(len(X)/30)
-        X = X.reshape((length, 30, 36))
-        return np.array(X)
-
-def choose_num_slots(distance: int, bitrate: int) -> int:
-    slots = 0
-    if bitrate <= 200:
-        slots = 6
-    elif 200 < bitrate and bitrate <= 400:
-        if distance <= 800:
-            slots = 6
-        else:
-            slots = 9
-    elif 400 < bitrate and bitrate <= 600:
-        if distance <= 1600:
-            slots = 9
-    elif 600 < bitrate and bitrate <= 800:
-        if distance <= 200:
-            slots = 9
-
-    return slots
+from helpers.mappings import path_names
+from helpers.distances import distances
+from helpers.import_data import load_demands, load_paths, load_demands
 
 
 if __name__ == "__main__":
-    #X = PathStore.load_data("POL12/pol12.pat")
-    #np.savetxt("szczecin-kolobrzeg.csv", X[0],  fmt='%d')
-    #dd = [paths_names[x] for x in range(36) if X[0,2,x]==1]
-    #print(dd)
+    paths = load_paths("POL12/pol12.pat")
+    np.savetxt("szczecin-kolobrzeg.csv", paths[0],  fmt='%d')
+    dd = [distances[x] for x in range(36) if paths[0,2,x]==1]
+    names = [path_names[x] for x in range(36) if paths[0,2,x]==1]
 
-    print(choose_num_slots(distance=1000, bitrate=340))
+    for i in range(len(dd)):
+        print(f"Ścieżka {names[i]} -> Distance {dd[i]} km")
+
+    # Jakiś sposób na wybór ścieżek należących do danej pary węzłów
+    demands = load_demands("POL12/demands_0")
+    print(paths.shape)
+    
+    
