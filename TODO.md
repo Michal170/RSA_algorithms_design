@@ -4,7 +4,6 @@ Don't hesitate to add coments and new todos
 ## Get nodes which include path
 ## Write First Fit algorithm
 ## Write Best Fit algorithm
-## Write decorator which will measure execution time
 ## Have a good import structure. First public imports then imports from ours classes, functions 
 
 ## How get values of paths from proposed paths

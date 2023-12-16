@@ -18,5 +18,3 @@ if __name__ == "__main__":
     # Jakiś sposób na wybór ścieżek należących do danej pary węzłów
     demands = load_demands("POL12/demands_0")
     print(paths.shape)
-    
-    
