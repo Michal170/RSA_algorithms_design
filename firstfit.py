@@ -34,7 +34,7 @@ class FirstFit(Base):
                     for d in range(len(p)):
                         if p[d] == 1:
                             distance = self.distances[d]
-                            num_slots = self.choose_slots_num(distance, demand.bitrates)
+                            num_slots = self.choose_slots_num(distance, demand.bitrates[i])
 
 
 
