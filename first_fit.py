@@ -1,7 +1,7 @@
 import csv
 import numpy as np
 from helpers.import_data import load_paths
-from edge import Edge
+from demand import Demand
 from helpers.mappings import path_names, path_index
 
 
