@@ -1,6 +1,6 @@
 import csv
 import numpy as np
-from helpers.import_data import load_paths
+from helpers.import_data import load_paths, load_demands
 from demand import Demand
 from helpers.mappings import path_names, path_index
 
@@ -12,7 +12,7 @@ class OpticalNetwork:
         self.path_index = path_index
         self.path_matrix = load_paths("./POL12/pol12.pat")
         print(np.shape(self.path_matrix))
-        self.requests_matrix = load_paths("./POL12/demands_0")
+        self.requests_matrix = load_demands("./POL12/demands_0")
 
     def allocate_requests(self):
         self.slot_matrix = [[0 for _ in range(320)] for _ in range(self.node)]
