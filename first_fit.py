@@ -8,21 +8,30 @@ from helpers.mappings import path_names, path_index
 class OpticalNetwork:
     def __init__(self, node) -> None:
         self.node = node
-        self.slot_matrix = []
+        # self.slot_matrix = []
         self.path_index = path_index
         self.path_matrix = load_paths("./POL12/pol12.pat")
-        print(np.shape(self.path_matrix))
         self.requests_matrix = load_demands("./POL12/demands_0")
+        self.slot_matrix = np.zeros((320, np.shape(self.path_matrix)[2]), dtype=int)
+        self.number_of_slots = 9  # Usunąć hardcodowanie!
+        self.blocks = []
 
     def allocate_requests(self):
-        self.slot_matrix = [[0 for _ in range(320)] for _ in range(self.node)]
         self.path_nodes = []
+
         for request in self.requests_matrix:
+            self.source = request[0]
+            self.destination = request[1]
+            print("request:", request[0], request[1])
             number_index = self.calcute_path_matrix_number(
                 int(request[0]), int(request[1])
             )
-            self.path_nodes = self.find_path(number_index)
-            print(self.path_nodes)
+            self.find_path_and_slots(number_index)
+            # break
+
+        print(self.slot_matrix)
+        np.savetxt("reserve.txt", self.slot_matrix, fmt="%d", delimiter="\t")
+        np.savetxt("block.txt", self.blocks, fmt="%d", delimiter="\t")
         return self.slot_matrix
 
     def calcute_path_matrix_number(self, source: int, destination: int) -> int:
@@ -32,92 +41,41 @@ class OpticalNetwork:
             path_matrix_number = self.node * source + destination - 1
         return path_matrix_number
 
-    def find_path(self, path_matrix_number: int) -> list:
-        for k in self.path_matrix[path_matrix_number]:
-            edges = np.shape(self.path_matrix)
-            path_nodes = []
-            for x in range(edges[2]):
-                if k[x] == 1:
-                    temp_list = self.path_index[x]
-                    for node in range(len(temp_list)):
-                        if temp_list[node] not in path_nodes:
-                            path_nodes.append(temp_list[node])
-        return path_nodes
+    def find_path_and_slots(self, path_matrix_number: int) -> list:
+        path_list = np.array(self.path_matrix[path_matrix_number])
+        for path in path_list:
+            index_list = []
+            for i in range(len(path)):
+                if path[i] == 1:
+                    index_list.append(i)
+            if self.check_if_slots_empty(index_list):
+                break
+            else:
+                continue
+        self.reserve_slots(index_list)
+        return index_list
 
-    # def is_reserved(self,)
+    def check_if_slots_empty(self, demands) -> bool:
+        result = np.ones(self.slot_matrix.shape[0], dtype=bool)
+        for index in demands:
+            result &= self.slot_matrix[:, index] == 0
+        available_slots = np.where(result)[0]
+        # print(available_slots)
+        self.available_slots = available_slots
+        if np.any(available_slots):
+            return True
+        else:
+            return False
 
-
-#     def __init__(self, num_slots):
-#         self.num_slots = num_slots
-#         self.network_state = {i: set() for i in range(num_slots)}
-
-#     def allocate_requests(self):
-#         requests = self.read_data()
-#         results = []
-#         for request in requests:
-#             source, destination, bitrate = request
-#             result = self.first_fit_allocation(source, destination, bitrate)
-#             results.append(result)
-#         return results
-
-#     def first_fit_allocation(self, source, destination, bitrate):
-#         required_slots = self.calculate_required_slots(bitrate)
-
-#         for start_slot in range(self.num_slots - required_slots + 1):
-#             end_slot = start_slot + required_slots - 1
-
-#             if all(
-#                 not self.is_slot_reserved(slot, source, destination)
-#                 for slot in range(start_slot, end_slot + 1)
-#             ):
-#                 self.reserve_slots(source, destination, start_slot, end_slot)
-#                 return f"Alokacja z {source} do {destination} z sukcesem: {start_slot}-{end_slot}"
-
-#         return f"Brak dostępnego widma dla zapotrzebowania z {source} do {destination}"
-
-#     def calculate_required_slots(self, bitrate):
-#         if bitrate <= 200:
-#             slots = 6
-#         else:
-#             slots = 9
-#         return slots
-
-#     def is_slot_reserved(self, slot, source, destination):
-#         if source in self.network_state and destination in self.network_state:
-#             return (
-#                 slot in self.network_state[source]
-#                 or slot in self.network_state[destination]
-#             )
-#         else:
-#             self.network_state[source] = set()
-#             self.network_state[destination] = set()
-#             return False
-
-#     def reserve_slots(self, source, destination, start_slot, end_slot):
-#         for slot in range(start_slot, end_slot + 1):
-#             self.network_state[source].add(slot)
-#             self.network_state[destination].add(slot)
-
-#     def read_data(self):
-#         filename = "requests.csv"
-#         data = []
-
-#         with open(filename, "r") as csv_file:
-#             loaded_data = csv.reader(csv_file)
-#             next(loaded_data)
-#             for row in loaded_data:
-#                 data.append(tuple(map(float, row[1:])))
-#         return data
+    def reserve_slots(self, index_list):
+        for index in index_list:
+            if np.shape(self.available_slots)[0] >= self.number_of_slots:
+                for slot in range(self.number_of_slots):
+                    self.slot_matrix[self.available_slots[slot]][index] = 1
+                self.blocks.append([self.source, self.destination])
 
 
 if __name__ == "__main__":
     node = 11
     algorithm = OpticalNetwork(node)
     result = algorithm.allocate_requests()
-    # print(result)
-
-# optical_network = OpticalNetwork(num_slots=100)
-
-# results = optical_network.allocate_requests()
-# for result in results:
-#     print(result)
