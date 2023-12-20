@@ -27,7 +27,7 @@ class OpticalNetwork:
                 int(request[0]), int(request[1])
             )
             self.find_path_and_slots(number_index)
-            # break
+            break
 
         print(self.slot_matrix)
         np.savetxt("reserve.txt", self.slot_matrix, fmt="%d", delimiter="\t")
