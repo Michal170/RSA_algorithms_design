@@ -15,6 +15,7 @@ class OpticalNetwork(Base):
         self.path_matrix = load_paths("./POL12/pol12.pat")
         self.requests_matrix = load_demands("./POL12/demands_0")
         self.slot_matrix = np.zeros((320, np.shape(self.path_matrix)[2]), dtype=int)
+        # self.slot_matrix = np.zeros((320, np.shape(self.path_matrix)[2]), dtype=int)
         self.blocks = []
 
     def allocate_requests(self):
@@ -79,6 +80,13 @@ class OpticalNetwork(Base):
 
         else:
             self.blocks.append([self.source, self.destination])
+            print(
+                "Reservation block for:",
+                self.source,
+                self.destination,
+                "Slots:",
+                self.number_of_slots,
+            )
 
         if np.any(self.slots_to_reserve):
             return True
@@ -87,11 +95,8 @@ class OpticalNetwork(Base):
 
     def reserve_slots(self, index_list):
         for index in index_list:
-            if np.shape(self.slots_to_reserve)[0] >= self.number_of_slots:
-                for slot in range(self.number_of_slots):
-                    self.slot_matrix[self.slots_to_reserve[slot]][index] = 1
-            else:
-                self.blocks.append([self.source, self.destination])
+            for slot in range(self.number_of_slots):
+                self.slot_matrix[self.slots_to_reserve[slot]][index] = 1
 
 
 if __name__ == "__main__":
