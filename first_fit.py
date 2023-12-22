@@ -3,33 +3,33 @@ import numpy as np
 from helpers.import_data import load_paths, load_demands
 from demand import Demand
 from helpers.mappings import path_names, path_index
+from helpers.distances import distances
+from base import Base
 
 
-class OpticalNetwork:
+class OpticalNetwork(Base):
     def __init__(self, node) -> None:
         self.node = node
-        # self.slot_matrix = []
         self.path_index = path_index
+        self.distances = distances
         self.path_matrix = load_paths("./POL12/pol12.pat")
         self.requests_matrix = load_demands("./POL12/demands_0")
         self.slot_matrix = np.zeros((320, np.shape(self.path_matrix)[2]), dtype=int)
-        self.number_of_slots = 9  # Usunąć hardcodowanie!
         self.blocks = []
 
     def allocate_requests(self):
         self.path_nodes = []
-
+        iteration = 0
         for request in self.requests_matrix:
             self.source = request[0]
             self.destination = request[1]
-            print("request:", request[0], request[1])
+            self.number_of_slots = Base.choose_slots_num(800, request[3])
             number_index = self.calcute_path_matrix_number(
                 int(request[0]), int(request[1])
             )
             self.find_path_and_slots(number_index)
-            break
+            iteration = iteration + 1
 
-        print(self.slot_matrix)
         np.savetxt("reserve.txt", self.slot_matrix, fmt="%d", delimiter="\t")
         np.savetxt("block.txt", self.blocks, fmt="%d", delimiter="\t")
         return self.slot_matrix
@@ -51,6 +51,7 @@ class OpticalNetwork:
             if self.check_if_slots_empty(index_list):
                 break
             else:
+                print("tu masz dziure")
                 continue
         self.reserve_slots(index_list)
         return index_list
@@ -60,18 +61,36 @@ class OpticalNetwork:
         for index in demands:
             result &= self.slot_matrix[:, index] == 0
         available_slots = np.where(result)[0]
-        # print(available_slots)
         self.available_slots = available_slots
-        if np.any(available_slots):
+
+        slots_window = []
+
+        for i in range(0, len(self.available_slots)):
+            if self.available_slots[i] == self.available_slots[i - 1] + 1:
+                slots_window.append(self.available_slots[i])
+            else:
+                slots_window = [self.available_slots[i]]
+
+            if len(slots_window) == self.number_of_slots:
+                break
+
+        if len(slots_window) == self.number_of_slots:
+            self.slots_to_reserve = slots_window
+
+        else:
+            self.blocks.append([self.source, self.destination])
+
+        if np.any(self.slots_to_reserve):
             return True
         else:
             return False
 
     def reserve_slots(self, index_list):
         for index in index_list:
-            if np.shape(self.available_slots)[0] >= self.number_of_slots:
+            if np.shape(self.slots_to_reserve)[0] >= self.number_of_slots:
                 for slot in range(self.number_of_slots):
-                    self.slot_matrix[self.available_slots[slot]][index] = 1
+                    self.slot_matrix[self.slots_to_reserve[slot]][index] = 1
+            else:
                 self.blocks.append([self.source, self.destination])
 
 
