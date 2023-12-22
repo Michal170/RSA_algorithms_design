@@ -13,10 +13,10 @@ class OpticalNetwork(Base):
         self.path_index = path_index
         self.distances = distances
         self.path_matrix = load_paths("./POL12/pol12.pat")
-        self.requests_matrix = load_demands("./POL12/demands_0")
+        self.requests_matrix = load_demands("./POL12/demands_8")
         self.slot_matrix = np.zeros((320, np.shape(self.path_matrix)[2]), dtype=int)
-        # self.slot_matrix = np.zeros((320, np.shape(self.path_matrix)[2]), dtype=int)
         self.blocks = []
+        self.iteration = 0
 
     def allocate_requests(self):
         self.path_nodes = []
@@ -30,6 +30,7 @@ class OpticalNetwork(Base):
             )
             self.find_path_and_slots(number_index)
             iteration = iteration + 1
+            self.iteration = self.iteration + 1
 
         np.savetxt("reserve.txt", self.slot_matrix, fmt="%d", delimiter="\t")
         np.savetxt("block.txt", self.blocks, fmt="%d", delimiter="\t")
@@ -44,6 +45,7 @@ class OpticalNetwork(Base):
 
     def find_path_and_slots(self, path_matrix_number: int) -> list:
         path_list = np.array(self.path_matrix[path_matrix_number])
+
         for path in path_list:
             index_list = []
             for i in range(len(path)):
@@ -80,13 +82,6 @@ class OpticalNetwork(Base):
 
         else:
             self.blocks.append([self.source, self.destination])
-            print(
-                "Reservation block for:",
-                self.source,
-                self.destination,
-                "Slots:",
-                self.number_of_slots,
-            )
 
         if np.any(self.slots_to_reserve):
             return True
@@ -96,7 +91,24 @@ class OpticalNetwork(Base):
     def reserve_slots(self, index_list):
         for index in index_list:
             for slot in range(self.number_of_slots):
-                self.slot_matrix[self.slots_to_reserve[slot]][index] = 1
+                if np.shape(self.slots_to_reserve)[0] >= self.number_of_slots:
+                    for slot in range(self.number_of_slots):
+                        self.slot_matrix[self.slots_to_reserve[slot]][
+                            index
+                        ] = self.iteration
+
+                else:
+                    self.blocks.append([self.source, self.destination])
+                    print(
+                        "Reservation block for:",
+                        self.source,
+                        self.destination,
+                        "Slots:",
+                        self.number_of_slots,
+                        "identyfikator:",
+                        self.iteration,
+                    )
+            self.slot_matrix[self.slots_to_reserve[slot]][index] = self.iteration
 
 
 if __name__ == "__main__":
