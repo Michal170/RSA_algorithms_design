@@ -18,9 +18,9 @@ class OpticalNetwork(Base):
         self.blocks = []
         self.iteration = 0
         self.slots_to_reserve = 0
+        self.path_nodes = []
 
     def allocate_requests(self):
-        self.path_nodes = []
         iteration = 0
         for request in self.requests_matrix:
             self.source = request[0]
@@ -38,6 +38,9 @@ class OpticalNetwork(Base):
         return self.slot_matrix
 
     def calcute_path_matrix_number(self, source: int, destination: int) -> int:
+        """
+        Calculate start index in path matrix
+        """
         if source > destination:
             path_matrix_number = self.node * source + destination
         else:
@@ -45,11 +48,12 @@ class OpticalNetwork(Base):
         return path_matrix_number
 
     def find_path_and_slots(self, path_matrix_number: int) -> list:
+        """
+        Get 30 best path and find first with avaible slots. If free slots exists, reservation will be done.
+        Otherwise route will be added to blocking table.
+
+        """
         path_list = np.array(self.path_matrix[path_matrix_number])
-        """
-        Get 30 best path and find first with avaible slots
-        
-        """
         for path in path_list:
             index_list = []
             temp_status = False
@@ -68,6 +72,9 @@ class OpticalNetwork(Base):
         return index_list
 
     def check_if_slots_empty(self, demands) -> bool:
+        """
+        Function will checks whether there are enough free slots
+        """
         result = np.ones(self.slot_matrix.shape[0], dtype=bool)
         for index in demands:
             result &= self.slot_matrix[:, index] == 0
@@ -84,8 +91,6 @@ class OpticalNetwork(Base):
 
             if len(slots_window) == self.number_of_slots:
                 break
-            # else:
-            #     continue
 
         if len(slots_window) == self.number_of_slots:
             self.slots_to_reserve = slots_window
@@ -95,6 +100,9 @@ class OpticalNetwork(Base):
             return False
 
     def reserve_slots(self, index_list):
+        """
+        Function makes a reservation
+        """
         for index in index_list:
             for slot in range(self.number_of_slots):
                 if np.shape(self.slots_to_reserve)[0] >= self.number_of_slots:
