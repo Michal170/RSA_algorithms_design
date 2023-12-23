@@ -5,6 +5,7 @@ from demand import Demand
 from helpers.mappings import path_names, path_index
 from helpers.distances import distances
 from base import Base
+from test import Verification
 
 
 class OpticalNetwork(Base):
@@ -13,7 +14,7 @@ class OpticalNetwork(Base):
         self.path_index = path_index
         self.distances = distances
         self.path_matrix = load_paths("./POL12/pol12.pat")
-        self.requests_matrix = load_demands("./POL12/demands_1")
+        self.requests_matrix = load_demands("./POL12/demands_0")
         self.slot_matrix = np.zeros((320, np.shape(self.path_matrix)[2]), dtype=int)
         self.blocks = []
         self.iteration = 0
@@ -119,4 +120,8 @@ class OpticalNetwork(Base):
 if __name__ == "__main__":
     node = 11
     algorithm = OpticalNetwork(node)
-    result = algorithm.allocate_requests()
+    algorithm.allocate_requests()
+
+    result = Verification()
+    result.verify_algorithm()
+    result.count_slot_occupancy()
