@@ -13,10 +13,11 @@ class OpticalNetwork(Base):
         self.path_index = path_index
         self.distances = distances
         self.path_matrix = load_paths("./POL12/pol12.pat")
-        self.requests_matrix = load_demands("./POL12/demands_8")
+        self.requests_matrix = load_demands("./POL12/demands_1")
         self.slot_matrix = np.zeros((320, np.shape(self.path_matrix)[2]), dtype=int)
         self.blocks = []
         self.iteration = 0
+        self.slots_to_reserve = 0
 
     def allocate_requests(self):
         self.path_nodes = []
@@ -45,18 +46,25 @@ class OpticalNetwork(Base):
 
     def find_path_and_slots(self, path_matrix_number: int) -> list:
         path_list = np.array(self.path_matrix[path_matrix_number])
-
+        """
+        Get 30 best path and find first with avaible slots
+        
+        """
         for path in path_list:
             index_list = []
+            temp_status = False
             for i in range(len(path)):
                 if path[i] == 1:
                     index_list.append(i)
             if self.check_if_slots_empty(index_list):
+                temp_status = True
                 break
             else:
-                print("tu masz dziure")
                 continue
-        self.reserve_slots(index_list)
+        if temp_status == False:
+            self.blocks.append([self.source, self.destination, self.iteration])
+        else:
+            self.reserve_slots(index_list)
         return index_list
 
     def check_if_slots_empty(self, demands) -> bool:
@@ -76,14 +84,12 @@ class OpticalNetwork(Base):
 
             if len(slots_window) == self.number_of_slots:
                 break
+            # else:
+            #     continue
 
         if len(slots_window) == self.number_of_slots:
             self.slots_to_reserve = slots_window
 
-        else:
-            self.blocks.append([self.source, self.destination])
-
-        if np.any(self.slots_to_reserve):
             return True
         else:
             return False
@@ -99,15 +105,6 @@ class OpticalNetwork(Base):
 
                 else:
                     self.blocks.append([self.source, self.destination])
-                    print(
-                        "Reservation block for:",
-                        self.source,
-                        self.destination,
-                        "Slots:",
-                        self.number_of_slots,
-                        "identyfikator:",
-                        self.iteration,
-                    )
             self.slot_matrix[self.slots_to_reserve[slot]][index] = self.iteration
 
 
