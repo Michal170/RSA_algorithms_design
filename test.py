@@ -1,6 +1,7 @@
 import numpy as np
 
-
+# TODO
+# Probably class not needed, would be good to have script instead class. We can discuss about it
 class Verification:
     def __init__(self) -> None:
         self.content = self.read_algorith_result()

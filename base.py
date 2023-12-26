@@ -1,4 +1,5 @@
 import time
+
 class Base(object):
     def __init__(self, node_num: int = 12) -> None:
         self.node_num = node_num

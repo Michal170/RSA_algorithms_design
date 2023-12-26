@@ -1,3 +1,4 @@
+from xml.sax import parseString
 import numpy as np
 
 from helpers.import_data import load_paths
@@ -15,7 +16,7 @@ class FirstFit(Base):
         super().__init__(node_num=node_num)
         self.paths = paths
         self.distances = distances
-        self.slots = np.zeros(max_slot)
+        self.slots = np.zeros((len(paths), max_slot))
         self.bitrates_num = demands.shape[1] - 3
         self.blocked = 0
         self.demands = []
@@ -31,21 +32,40 @@ class FirstFit(Base):
                 # Tutaj mamy wszystkie 30 proponowanych ścieżek wraz z bitratem
 
                 for p in path:
+                    distance = 0
                     for d in range(len(p)):
                         if p[d] == 1:
-                            distance = self.distances[d]
-                            num_slots = self.choose_slots_num(distance, demand.bitrates[i])
+                            distance += self.distances[d]
 
+                    num_slots = self.choose_slots_num(distance, demand.bitrates[i])
+                    out = self._allocate_slots(num_slots)
+                    print(out)
 
+                    if out:
+                        break
+                
+                
 
-                    print(p)
+                print(self.slots)
                 print("\n")
+                exit("Demands Testing ...")
+            exit("Testing...")
+                
 
+    def _allocate_slots(self, num_slots: int) -> bool:
+        """Allocate slots"""
+        # Alokacja widma ale narazie nie uwzględnia 
+        idx = np.where(np.convolve(self.slots, np.ones(num_slots), mode='valid') == 0)[0]
+        if idx.size == 0:
+            return False
+        else:
+            print(idx)
+            start_idx = idx[0]
+            print(f"Start index: {start_idx}")
+            self.slots[start_idx:start_idx + num_slots] = 1
+            return True
 
     def _release_slots(self):
-        pass
-
-    def _allocate_slots(self):
         pass
 
 if __name__ == "__main__":
