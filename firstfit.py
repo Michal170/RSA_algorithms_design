@@ -43,8 +43,6 @@ class FirstFit(Base):
                 if out == False:
                     self.blocked += 1
                 
-
-
             print(f"Demands: {len(self.demands)}")
             print(f"Blocked Count: {self.blocked}")
             print(f"Blocked Ratio: {self.blocked/len(self.demands)}")
