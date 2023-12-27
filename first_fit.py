@@ -27,55 +27,50 @@ class OpticalNetwork(Base):
             self.source = request[0]
             self.destination = request[1]
             self.number_of_slots = Base.choose_slots_num(800, request[3])
-            number_index = self.calcute_path_matrix_number(
-                int(request[0]), int(request[1])
-            )
+            number_index = self.calcute_path_matrix_number()
             self.find_path_and_slots(number_index)
             self.iteration = self.iteration + 1
-            # break
 
         np.savetxt("reserve.txt", self.slot_matrix, fmt="%d", delimiter="\t")
         np.savetxt("block.txt", self.blocks, fmt="%d", delimiter="\t")
         return self.slot_matrix
 
     def allocate_best_fit_part(self):
-        index = 3
-        count = 0
-        for bitrate in range(3, len(self.requests_matrix)):
-            deman = 1
-            for request in self.requests_matrix:
-                if not math.isnan(request[bitrate - 1]):
-                    slots = Base.choose_slots_num(800, request[bitrate])
-                    previous_slots = Base.choose_slots_num(800, request[bitrate - 1])
-                    if slots != previous_slots:
-                        print(
-                            "Różnica slotów",
-                            #     "nr.bitratu:",
-                            #     index,
-                            previous_slots,
-                            slots,
-                            "nr.żądania:",
-                            deman - 1,
-                            "iteracja",
-                            count,
-                        )
-                        count += 1
-                    deman += 1
-                    # break
-            if bitrate == np.shape(self.requests_matrix)[1] - 1:
-                break
-            index += 1
-        print(f"Ilość zmian:{count}")
-        print(f"Ilość iteracji:{index}")
+        index = 4
 
-    def calcute_path_matrix_number(self, source: int, destination: int) -> int:
+        for bitrate_value in range(4, np.shape(self.requests_matrix)[1]):
+            count = 0
+            for request in self.requests_matrix:
+                slots = Base.choose_slots_num(800, request[bitrate_value])
+                previous_slots = Base.choose_slots_num(800, request[bitrate_value - 1])
+                if slots != previous_slots:
+                    self._release_slots(count)
+                    self.source = request[0]
+                    self.destination = request[1]
+                    self.iteration = count
+                    path = self.calcute_path_matrix_number()
+                    self.find_path_and_slots(path)
+                count += 1
+
+            index += 1
+        np.savetxt("reserve_best_fit.txt", self.slot_matrix, fmt="%d", delimiter="\t")
+        np.savetxt("block_best_fit.txt", self.blocks, fmt="%d", delimiter="\t")
+
+    def _release_slots(self, slots):
+        index = np.where(self.slot_matrix == slots)
+        for idx in range(len(index[0])):
+            self.slot_matrix[index[0][idx]][index[1][idx]] = 0
+
+    def calcute_path_matrix_number(self) -> int:
         """
         Calculate start index in path matrix
         """
-        if source > destination:
-            path_matrix_number = self.node * source + destination
+        if int(self.source) > int(self.destination):
+            path_matrix_number = self.node * int(self.source) + int(self.destination)
         else:
-            path_matrix_number = self.node * source + destination - 1
+            path_matrix_number = (
+                self.node * int(self.source) + int(self.destination) - 1
+            )
         return path_matrix_number
 
     def find_path_and_slots(self, path_matrix_number: int) -> list:
@@ -152,8 +147,14 @@ if __name__ == "__main__":
     node = 11
     algorithm = OpticalNetwork(node)
     algorithm.allocate_first_fit_part()
-    algorithm.allocate_best_fit_part()
 
-    result = Verification()
+    print("First fit part:")
+    result = Verification("reserve.txt")
     result.verify_algorithm()
     result.count_slot_occupancy()
+    print("-----------------------------------------")
+    print(" Best fit part:")
+    algorithm.allocate_best_fit_part()
+    result_best = Verification("reserve_best_fit.txt")
+    result_best.verify_algorithm()
+    result_best.count_slot_occupancy()
