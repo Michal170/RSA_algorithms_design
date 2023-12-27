@@ -6,6 +6,7 @@ from helpers.mappings import path_names, path_index
 from helpers.distances import distances
 from base import Base
 from test import Verification
+import math
 
 
 class OpticalNetwork(Base):
@@ -17,12 +18,11 @@ class OpticalNetwork(Base):
         self.requests_matrix = load_demands("./POL12/demands_0")
         self.slot_matrix = np.zeros((320, np.shape(self.path_matrix)[2]), dtype=int)
         self.blocks = []
-        self.iteration = 0
+        self.iteration = 1
         self.slots_to_reserve = 0
         self.path_nodes = []
 
-    def allocate_requests(self):
-        iteration = 0
+    def allocate_first_fit_part(self):
         for request in self.requests_matrix:
             self.source = request[0]
             self.destination = request[1]
@@ -31,12 +31,42 @@ class OpticalNetwork(Base):
                 int(request[0]), int(request[1])
             )
             self.find_path_and_slots(number_index)
-            iteration = iteration + 1
             self.iteration = self.iteration + 1
+            # break
 
         np.savetxt("reserve.txt", self.slot_matrix, fmt="%d", delimiter="\t")
         np.savetxt("block.txt", self.blocks, fmt="%d", delimiter="\t")
         return self.slot_matrix
+
+    def allocate_best_fit_part(self):
+        index = 3
+        count = 0
+        for bitrate in range(3, len(self.requests_matrix)):
+            deman = 1
+            for request in self.requests_matrix:
+                if not math.isnan(request[bitrate - 1]):
+                    slots = Base.choose_slots_num(800, request[bitrate])
+                    previous_slots = Base.choose_slots_num(800, request[bitrate - 1])
+                    if slots != previous_slots:
+                        print(
+                            "Różnica slotów",
+                            #     "nr.bitratu:",
+                            #     index,
+                            previous_slots,
+                            slots,
+                            "nr.żądania:",
+                            deman - 1,
+                            "iteracja",
+                            count,
+                        )
+                        count += 1
+                    deman += 1
+                    # break
+            if bitrate == np.shape(self.requests_matrix)[1] - 1:
+                break
+            index += 1
+        print(f"Ilość zmian:{count}")
+        print(f"Ilość iteracji:{index}")
 
     def calcute_path_matrix_number(self, source: int, destination: int) -> int:
         """
@@ -111,6 +141,7 @@ class OpticalNetwork(Base):
                         self.slot_matrix[self.slots_to_reserve[slot]][
                             index
                         ] = self.iteration
+                        # print(self.iteration)
 
                 else:
                     self.blocks.append([self.source, self.destination])
@@ -120,7 +151,8 @@ class OpticalNetwork(Base):
 if __name__ == "__main__":
     node = 11
     algorithm = OpticalNetwork(node)
-    algorithm.allocate_requests()
+    algorithm.allocate_first_fit_part()
+    algorithm.allocate_best_fit_part()
 
     result = Verification()
     result.verify_algorithm()
