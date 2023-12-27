@@ -27,6 +27,11 @@ class OpticalNetwork(Base):
             self.source = request[0]
             self.destination = request[1]
             self.number_of_slots = Base.choose_slots_num(800, request[3])
+            print(self.number_of_slots)
+            # if self.number_of_slots > 6:
+            #     print(request[3])
+            # if request[3] > 400:
+            #     print(request[3])
             number_index = self.calcute_path_matrix_number()
             self.find_path_and_slots(number_index)
             self.iteration = self.iteration + 1
@@ -44,6 +49,14 @@ class OpticalNetwork(Base):
                 slots = Base.choose_slots_num(800, request[bitrate_value])
                 previous_slots = Base.choose_slots_num(800, request[bitrate_value - 1])
                 if slots != previous_slots:
+                    print(
+                        request[bitrate_value - 1],
+                        request[bitrate_value],
+                        previous_slots,
+                        slots,
+                        count,
+                    )
+                    self.number_of_slots = slots
                     self._release_slots(count)
                     self.source = request[0]
                     self.destination = request[1]
@@ -57,6 +70,7 @@ class OpticalNetwork(Base):
         np.savetxt("block_best_fit.txt", self.blocks, fmt="%d", delimiter="\t")
 
     def _release_slots(self, slots):
+        # print(slots)
         index = np.where(self.slot_matrix == slots)
         for idx in range(len(index[0])):
             self.slot_matrix[index[0][idx]][index[1][idx]] = 0
@@ -105,6 +119,7 @@ class OpticalNetwork(Base):
         for index in demands:
             result &= self.slot_matrix[:, index] == 0
         available_slots = np.where(result)[0]
+        # print("wolne sloty:", available_slots)
         self.available_slots = available_slots
 
         slots_window = []

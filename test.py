@@ -1,13 +1,15 @@
 import numpy as np
 
+
 # TODO
 # Probably class not needed, would be good to have script instead class. We can discuss about it
 class Verification:
-    def __init__(self) -> None:
+    def __init__(self, file) -> None:
+        self.filename = file
         self.content = self.read_algorith_result()
 
     def read_algorith_result(self):
-        with open("reserve.txt", "r") as slots_reservation:
+        with open(self.filename, "r") as slots_reservation:
             content = slots_reservation.read()
         return content
 
