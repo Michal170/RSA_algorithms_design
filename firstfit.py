@@ -37,7 +37,6 @@ class FirstFit(Base):
                     path_idx = np.where(p == 1)[0]
                     num_slots = self.choose_slots_num(distance, demand.bitrates[i])
                     out = self._allocate_slots(num_slots, path_idx)
-                    print(f"OUT: {out}")
                     if out == True:
                         break
 
@@ -47,19 +46,15 @@ class FirstFit(Base):
 
 
             print(f"Demands: {len(self.demands)}")
-            print(f"Blocked Length: {self.blocked}")
-            print(f"Blocked: {self.blocked/len(self.demands)}")
+            print(f"Blocked Count: {self.blocked}")
+            print(f"Blocked Ratio: {self.blocked/len(self.demands)}")
             exit("END...")
                 
 
     def _allocate_slots(self, num_slots: int, path_idx: np.array) -> bool:
         """Allocate slots"""
-        slots = np.prod(self.slots[path_idx], axis=0)
-        print(path_idx)
-        print(self.slots[path_idx])
-        print(slots)
-        print(self.slots[path_idx])
-
+        slots = np.bitwise_or.reduce(self.slots[path_idx].astype(int), axis=0)
+        np.bitwise_or
         idx = np.where(np.convolve(slots, np.ones(num_slots), mode='valid') == 0)[0]
 
         if idx.size == 0:
@@ -73,7 +68,7 @@ class FirstFit(Base):
         pass
 
 if __name__ == "__main__":
-    demands = load_demands("POL12/demands_1")
+    demands = load_demands("POL12/demands_6")
     paths = load_paths("POL12/pol12.pat")
     xd = FirstFit(demands=demands, paths=paths, distances=distances)
     xd.find_path()
