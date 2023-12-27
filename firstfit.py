@@ -52,7 +52,6 @@ class FirstFit(Base):
     def _allocate_slots(self, num_slots: int, path_idx: np.array) -> bool:
         """Allocate slots"""
         slots = np.bitwise_or.reduce(self.slots[path_idx].astype(int), axis=0)
-        np.bitwise_or
         idx = np.where(np.convolve(slots, np.ones(num_slots), mode='valid') == 0)[0]
 
         if idx.size == 0:
