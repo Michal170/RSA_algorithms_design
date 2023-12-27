@@ -29,47 +29,51 @@ class FirstFit(Base):
             for demand in self.demands:
                 idx = self.nodes_mapping(demand.node_in, demand.node_out)
                 path = self.paths[idx]
+                out = None
+
                 # Tutaj mamy wszystkie 30 proponowanych ścieżek wraz z bitratem
-
                 for p in path:
-                    distance = 0
-                    for d in range(len(p)):
-                        if p[d] == 1:
-                            distance += self.distances[d]
-
+                    distance = np.sum(self.distances[p == 1])
+                    path_idx = np.where(p == 1)[0]
                     num_slots = self.choose_slots_num(distance, demand.bitrates[i])
-                    out = self._allocate_slots(num_slots)
-                    print(out)
-
-                    if out:
+                    out = self._allocate_slots(num_slots, path_idx)
+                    print(f"OUT: {out}")
+                    if out == True:
                         break
-                
+
+                if out == False:
+                    self.blocked += 1
                 
 
-                print(self.slots)
-                print("\n")
-                exit("Demands Testing ...")
-            exit("Testing...")
+
+            print(f"Demands: {len(self.demands)}")
+            print(f"Blocked Length: {self.blocked}")
+            print(f"Blocked: {self.blocked/len(self.demands)}")
+            exit("END...")
                 
 
-    def _allocate_slots(self, num_slots: int) -> bool:
+    def _allocate_slots(self, num_slots: int, path_idx: np.array) -> bool:
         """Allocate slots"""
-        # Alokacja widma ale narazie nie uwzględnia 
-        idx = np.where(np.convolve(self.slots, np.ones(num_slots), mode='valid') == 0)[0]
+        slots = np.prod(self.slots[path_idx], axis=0)
+        print(path_idx)
+        print(self.slots[path_idx])
+        print(slots)
+        print(self.slots[path_idx])
+
+        idx = np.where(np.convolve(slots, np.ones(num_slots), mode='valid') == 0)[0]
+
         if idx.size == 0:
             return False
         else:
-            print(idx)
             start_idx = idx[0]
-            print(f"Start index: {start_idx}")
-            self.slots[start_idx:start_idx + num_slots] = 1
+            self.slots[path_idx, start_idx:start_idx + num_slots] = 1
             return True
 
     def _release_slots(self):
         pass
 
 if __name__ == "__main__":
-    demands = load_demands("POL12/demands_0")
+    demands = load_demands("POL12/demands_1")
     paths = load_paths("POL12/pol12.pat")
     xd = FirstFit(demands=demands, paths=paths, distances=distances)
     xd.find_path()
