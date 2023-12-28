@@ -1,4 +1,3 @@
-from xml.sax import parseString
 import numpy as np
 
 from helpers.import_data import load_paths
@@ -6,10 +5,6 @@ from helpers.import_data import load_demands
 from demand import Demand
 from helpers.distances import distances
 from base import Base
-
-"""
-What is needed to store in this class
-"""
 
 class FirstFit(Base):
     def __init__(self, paths: np.ndarray, distances: np.array, demands: np.ndarray, max_slot=320, node_num: int = 12):
@@ -31,7 +26,6 @@ class FirstFit(Base):
                 path = self.paths[idx]
                 out = None
 
-                # Tutaj mamy wszystkie 30 proponowanych ścieżek wraz z bitratem
                 for p in path:
                     distance = np.sum(self.distances[p == 1])
                     path_idx = np.where(p == 1)[0]
@@ -61,8 +55,8 @@ class FirstFit(Base):
         print("Final results:\n")
         print(f"Blocked requests: {self.blocked}")
         print(f"Blocked ratio: {self.blocked/len(self.demands)}")
-        print(f"Allocated Slots: {np.count_nonzero(self.slots==0)}")
-        print(f"Allocated Slots: {np.count_nonzero(self.slots == 0)/(320*36)}")
+        print(f"Allocated Slots: {np.count_nonzero(self.slots)}")
+        print(f"Allocated Slots: {np.count_nonzero(self.slots)/(320*36)*100}")
                 
 
     def _allocate_slots(self, num_slots: int, path_idx: np.array, demand_idx: int) -> bool:
