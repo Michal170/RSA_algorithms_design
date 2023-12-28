@@ -6,6 +6,7 @@ from helpers.mappings import path_names, path_index
 from helpers.distances import distances
 from base import Base
 from test import Verification
+from helpers.distances import import_distances
 import math
 
 
@@ -15,18 +16,20 @@ class OpticalNetwork(Base):
         self.path_index = path_index
         self.distances = distances
         self.path_matrix = load_paths("./POL12/pol12.pat")
-        self.requests_matrix = load_demands("./POL12/demands_6")
+        self.requests_matrix = load_demands("./POL12/demands_1")
+        self.distances_matrix = import_distances("POL12/pol12.net")
         self.slot_matrix = np.zeros((320, np.shape(self.path_matrix)[2]), dtype=int)
         self.blocks = []
         self.iteration = 1
         self.slots_to_reserve = 0
         self.path_nodes = []
+        self.distance = 0
 
     def allocate_first_fit_part(self):
         for request in self.requests_matrix:
             self.source = request[0]
             self.destination = request[1]
-            self.number_of_slots = Base.choose_slots_num(800, request[3])
+            self.number_of_slots = Base.choose_slots_num(self.distance, request[3])
             number_index = self.calcute_path_matrix_number()
             self.find_path_and_slots(number_index)
             self.iteration = self.iteration + 1
@@ -45,6 +48,7 @@ class OpticalNetwork(Base):
             count = 0
             for request in self.requests_matrix:
                 slots = Base.choose_slots_num(800, request[bitrate_value])
+
                 previous_slots = Base.choose_slots_num(800, request[bitrate_value - 1])
                 if slots != previous_slots:
                     self.number_of_slots = slots
@@ -91,12 +95,15 @@ class OpticalNetwork(Base):
 
         """
         path_list = np.array(self.path_matrix[path_matrix_number])
+        distance = 0
         for path in path_list:
             index_list = []
             temp_status = False
             for i in range(len(path)):
                 if path[i] == 1:
                     index_list.append(i)
+                    distance += self.distances_matrix[i]
+            self.distance = distance
             if self.check_if_slots_empty(index_list):
                 temp_status = True
                 break
@@ -129,9 +136,8 @@ class OpticalNetwork(Base):
             if len(slots_window) == self.number_of_slots:
                 break
 
-        if len(slots_window) == self.number_of_slots:
+        if len(slots_window) == self.number_of_slots and int(self.number_of_slots) != 0:
             self.slots_to_reserve = slots_window
-
             return True
         else:
             return False

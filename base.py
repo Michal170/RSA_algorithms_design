@@ -1,9 +1,10 @@
 import time
 
+
 class Base(object):
     def __init__(self, node_num: int = 12) -> None:
         self.node_num = node_num
-    
+
     def nodes_mapping(self, node_in, node_out) -> int:
         """Maps node connection to index which can be use to get proposed paths"""
         node_max_conn = self.node_num - 1
@@ -30,10 +31,11 @@ class Base(object):
                 slots_num = 9
 
         return slots_num
-    
+
     @staticmethod
     def measure_execution_time(func):
         """Measures execution time of function which is decorated"""
+
         def wrapper(*args, **kwargs):
             start_time = time.time()
             result = func(*args, **kwargs)
@@ -41,4 +43,5 @@ class Base(object):
             execution_time = end_time - start_time
             print(f"Execution time of {func.__name__}: {execution_time} seconds")
             return result
+
         return wrapper
