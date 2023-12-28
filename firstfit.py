@@ -39,6 +39,8 @@ class FirstFit(Base):
                     path_idx = np.where(p == 1)[0]
                     if i == 0:
                         num_slots = self.choose_slots_num(distance, demand.bitrates[i])
+                        if num_slots == 0:
+                            continue
                         out = self._allocate_slots(num_slots, path_idx, demand_idx)
                         if out == True:
                             break
@@ -48,6 +50,12 @@ class FirstFit(Base):
                             distance, demand.bitrates[i - 1]
                         )
                         num_slots = self.choose_slots_num(distance, demand.bitrates[i])
+                        if num_slots == 0:
+                            continue
+
+                        #print(f"Liczba slotów {num_slots}")
+                        #print(f"Bitrate: {demand.bitrates[i]}")
+                        #print(f"Distance: {distance}")
 
                         if num_slots != num_slots_prev:
                             self._release_slots(path_idx, demand_idx)
@@ -64,7 +72,7 @@ class FirstFit(Base):
             # print(f"Blocked Ratio: {self.blocked/len(self.demands)}")
         print("Final results:\n")
         print(f"Blocked requests: {self.blocked}")
-        print(f"Blocked ratio: {self.blocked/len(self.demands)}")
+        print(f"Blocked ratio: {self.blocked/len(self.demands)*288}")
         print(f"Allocated Slots: {np.count_nonzero(self.slots)}")
         print(f"Allocated Slots: {np.count_nonzero(self.slots)/(320*36)*100}")
 
@@ -73,8 +81,10 @@ class FirstFit(Base):
     ) -> bool:
         """Allocate slots"""
         slots = np.where(self.slots[path_idx] > 0, 1, 0)
-        slots = np.bitwise_and.reduce(slots.astype(int), axis=0)
-        idx = np.where(np.convolve(slots, np.ones(num_slots), mode="valid") == 0)[0]
+        #print(f"Slots original: {slots}")
+        slots = np.bitwise_or.reduce(slots.astype(int), axis=0)
+        #print(f"Slots reduced: {slots}")
+        idx = np.where(np.convolve(slots, np.ones(num_slots), mode='valid') == 0)[0]
 
         if idx.size == 0:
             return False
@@ -90,7 +100,7 @@ class FirstFit(Base):
 
 
 if __name__ == "__main__":
-    demands = load_demands("POL12/demands_6")
+    demands = load_demands("POL12/demands_0")
     paths = load_paths("POL12/pol12.pat")
     xd = FirstFit(demands=demands, paths=paths, distances=distances)
     xd.find_path()
