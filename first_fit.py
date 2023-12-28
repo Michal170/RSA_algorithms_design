@@ -15,7 +15,7 @@ class OpticalNetwork(Base):
         self.path_index = path_index
         self.distances = distances
         self.path_matrix = load_paths("./POL12/pol12.pat")
-        self.requests_matrix = load_demands("./POL12/demands_1")
+        self.requests_matrix = load_demands("./POL12/demands_6")
         self.slot_matrix = np.zeros((320, np.shape(self.path_matrix)[2]), dtype=int)
         self.blocks = []
         self.iteration = 1
@@ -33,6 +33,9 @@ class OpticalNetwork(Base):
 
         np.savetxt("reserve.txt", self.slot_matrix, fmt="%d", delimiter="\t")
         np.savetxt("block.txt", self.blocks, fmt="%d", delimiter="\t")
+        result = Verification("reserve.txt")
+        result.verify_algorithm()
+        result.count_slot_occupancy()
         return self.slot_matrix
 
     def allocate_best_fit_part(self):
@@ -52,11 +55,17 @@ class OpticalNetwork(Base):
                     path = self.calcute_path_matrix_number()
                     self.find_path_and_slots(path)
                 count += 1
-                break
 
             index += 1
-        np.savetxt("reserve_best_fit.txt", self.slot_matrix, fmt="%d", delimiter="\t")
-        np.savetxt("block_best_fit.txt", self.blocks, fmt="%d", delimiter="\t")
+            np.savetxt(
+                "reserve_best_fit.txt", self.slot_matrix, fmt="%d", delimiter="\t"
+            )
+            np.savetxt("block_best_fit.txt", self.blocks, fmt="%d", delimiter="\t")
+            print(f"Iteracja:{bitrate_value+1}")
+            result_best = Verification("reserve_best_fit.txt")
+
+            result_best.count_slot_occupancy()
+        result_best.verify_algorithm()
 
     def _release_slots(self, slots):
         index = np.where(self.slot_matrix == slots)
@@ -150,12 +159,6 @@ if __name__ == "__main__":
     algorithm.allocate_first_fit_part()
 
     print("First fit part:")
-    result = Verification("reserve.txt")
-    result.verify_algorithm()
-    result.count_slot_occupancy()
     print("-----------------------------------------")
     print(" Best fit part:")
     algorithm.allocate_best_fit_part()
-    result_best = Verification("reserve_best_fit.txt")
-    result_best.verify_algorithm()
-    result_best.count_slot_occupancy()
