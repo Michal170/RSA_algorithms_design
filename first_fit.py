@@ -12,6 +12,7 @@ import math
 
 class OpticalNetwork(Base):
     def __init__(self, node) -> None:
+        super().__init__()
         self.node = node
         self.path_index = path_index
         self.distances = distances
@@ -29,7 +30,7 @@ class OpticalNetwork(Base):
         for request in self.requests_matrix:
             self.source = request[0]
             self.destination = request[1]
-            self.number_of_slots = Base.choose_slots_num(self.distance, request[3])
+            self.number_of_slots = self.choose_slots_num(self.distance, request[3])
             number_index = self.calcute_path_matrix_number()
             self.find_path_and_slots(number_index)
             self.iteration = self.iteration + 1
