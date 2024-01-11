@@ -17,12 +17,13 @@ class OpticalNetwork(Base):
         self.path_index = path_index
         self.distances = distances
         self.path_matrix = load_paths("./POL12/pol12.pat")
-        self.requests_matrix = load_demands("./POL12/demands_1")
+        self.requests_matrix = load_demands("./POL12/demands_0")
         self.distances_matrix = import_distances("POL12/pol12.net")
         self.slot_matrix = np.zeros((320, np.shape(self.path_matrix)[2]), dtype=int)
         self.blocks = []
         self.iteration = 1
         self.slots_to_reserve = 0
+        self.slots_to_reserve_worst_fit = []
         self.path_nodes = []
         self.distance = 0
 
@@ -34,6 +35,7 @@ class OpticalNetwork(Base):
             number_index = self.calcute_path_matrix_number()
             self.find_path_and_slots(number_index)
             self.iteration = self.iteration + 1
+            # break
 
         np.savetxt("reserve.txt", self.slot_matrix, fmt="%d", delimiter="\t")
         np.savetxt("block.txt", self.blocks, fmt="%d", delimiter="\t")
@@ -42,14 +44,39 @@ class OpticalNetwork(Base):
         result.count_slot_occupancy()
         return self.slot_matrix
 
-    def allocate_best_fit_part(self):
+    def allocate_worst_fit_part_next(self):
         index = 4
 
         for bitrate_value in range(4, np.shape(self.requests_matrix)[1]):
             count = 0
             for request in self.requests_matrix:
                 slots = Base.choose_slots_num(800, request[bitrate_value])
+                previous_slots = Base.choose_slots_num(800, request[bitrate_value - 1])
+                if slots != previous_slots:
+                    self.number_of_slots = slots
+                    self._release_slots(count)
+                    self.source = request[0]
+                    self.destination = request[1]
+                    self.iteration = count
+                    path = self.calcute_path_matrix_number()
+                    self.find_path_and_slots_worst_fit(path)
+                count += 1
 
+            index += 1
+        np.savetxt("reserve_worst_fit.txt", self.slot_matrix, fmt="%d", delimiter="\t")
+        np.savetxt("block.txt", self.blocks, fmt="%d", delimiter="\t")
+        result = Verification("reserve_worst_fit.txt")
+        result.verify_algorithm()
+        result.count_slot_occupancy()
+        return self.slot_matrix
+
+    def allocate_first_fit_part_next(self):
+        index = 4
+
+        for bitrate_value in range(4, np.shape(self.requests_matrix)[1]):
+            count = 0
+            for request in self.requests_matrix:
+                slots = Base.choose_slots_num(800, request[bitrate_value])
                 previous_slots = Base.choose_slots_num(800, request[bitrate_value - 1])
                 if slots != previous_slots:
                     self.number_of_slots = slots
@@ -63,11 +90,14 @@ class OpticalNetwork(Base):
 
             index += 1
             np.savetxt(
-                "reserve_best_fit.txt", self.slot_matrix, fmt="%d", delimiter="\t"
+                "reserve_ff_next_iteration.txt",
+                self.slot_matrix,
+                fmt="%d",
+                delimiter="\t",
             )
             np.savetxt("block_best_fit.txt", self.blocks, fmt="%d", delimiter="\t")
             print(f"Iteracja:{bitrate_value+1}")
-            result_best = Verification("reserve_best_fit.txt")
+            result_best = Verification("reserve_ff_next_iteration.txt")
 
             result_best.count_slot_occupancy()
         result_best.verify_algorithm()
@@ -116,6 +146,65 @@ class OpticalNetwork(Base):
             self.reserve_slots(index_list)
         return index_list
 
+    def find_path_and_slots_worst_fit(self, path_matrix_number: int) -> list:
+        """
+        Get 30 best path and find first with avaible slots. If free slots exists, reservation will be done.
+        Otherwise route will be added to blocking table.
+
+        """
+        path_list = np.array(self.path_matrix[path_matrix_number])
+        distance = 0
+        for path in path_list:
+            index_list = []
+            temp_status = False
+            for i in range(len(path)):
+                if path[i] == 1:
+                    index_list.append(i)
+                    distance += self.distances_matrix[i]
+            self.distance = distance
+            if self.check_if_slots_empty_worst_fit(index_list):
+                temp_status = True
+                break
+            else:
+                continue
+        if temp_status == False:
+            self.blocks.append([self.source, self.destination, self.iteration])
+        else:
+            self.reserve_slots(index_list)
+        return index_list
+
+    def check_if_slots_empty_worst_fit(self, demands) -> bool:
+        """
+        Function will checks whether there are enough free slots
+        """
+        print("worst fit:")
+        result = np.ones(self.slot_matrix.shape[0], dtype=bool)
+        for index in demands:
+            result &= self.slot_matrix[:, index] == 0
+
+        available_slots = np.where(result)[0]
+        self.available_slots = available_slots
+
+        slots_window = []
+        list = []
+
+        for i in range(1, len(self.available_slots)):
+            if self.available_slots[i] == self.available_slots[i - 1] + 1:
+                list.append(self.available_slots[i])
+            else:
+                if len(list) > len(slots_window) and len(list) >= self.number_of_slots:
+                    slots_window = list
+                    list = []
+                    list.append(self.available_slots[i])
+                else:
+                    list = []
+        if len(slots_window) >= self.number_of_slots and int(self.number_of_slots) != 0:
+            self.slots_to_reserve = slots_window[-self.number_of_slots :]
+            print(self.slots_to_reserve, self.iteration)
+            return True
+        else:
+            return False
+
     def check_if_slots_empty(self, demands) -> bool:
         """
         Function will checks whether there are enough free slots
@@ -147,8 +236,10 @@ class OpticalNetwork(Base):
         """
         Function makes a reservation
         """
+        print("liczba slotow do rezerwacji:", self.number_of_slots)
         for index in index_list:
             for slot in range(self.number_of_slots):
+                print(slot, "test_slotu")
                 if np.shape(self.slots_to_reserve)[0] >= self.number_of_slots:
                     for slot in range(self.number_of_slots):
                         self.slot_matrix[self.slots_to_reserve[slot]][
@@ -168,4 +259,7 @@ if __name__ == "__main__":
     print("First fit part:")
     print("-----------------------------------------")
     print(" Best fit part:")
-    algorithm.allocate_best_fit_part()
+    algorithm.allocate_worst_fit_part_next()
+    # algorithm.allocate_first_fit_part_next()
+    # algorithm.allocate_first_fit_part_next()
+    # algorithm.allocate_best_fit_part()
