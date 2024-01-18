@@ -4,27 +4,42 @@ import numpy as np
 # TODO
 # Probably class not needed, would be good to have script instead class. We can discuss about it
 class Verification:
-    def __init__(self, file) -> None:
+    def __init__(self, file, dataset) -> None:
         self.filename = file
         self.content = self.read_algorith_result()
+        self.dataset = dataset
 
     def read_algorith_result(self):
         content = np.genfromtxt(self.filename)
         return content
 
     def verify_algorithm(self):
+        if self.dataset == "us26":
+            probe = 1000
+            shape = 84
+        else:
+            probe = 500
+            shape = 36
         requests = self.content
         unique_requests = np.unique(requests)
-        missing_requests = set(range(500)) - set(unique_requests)
+        missing_requests = set(range(probe)) - set(unique_requests)
 
-        if not missing_requests:
-            print("Obsłużono wszystkie requesty")
-        else:
-            print(f"W pliku brakuje następujących requestów: {missing_requests}")
+        # if not missing_requests:
+        #     # print("Obsłużono wszystkie requesty")
+        #     pass
+        # else:
+        #     print(f"W pliku brakuje następujących requestów: {missing_requests}")
 
-    def count_slot_occupancy(self):
-        requests = np.count_nonzero(self.content.astype(int))
-        print(f"Zajętość slotów wynosi: {round(requests/(36*320) * 100, 2)}%")
+        capacity = len(missing_requests)
+        counts = np.count_nonzero(self.content.astype(int))
+        print(
+            f"  {round(counts/(shape*320) * 100, 2)}%          |            {round((((probe-capacity)/probe)*100),2)}%"
+            # f"Zajętość slotów wynosi: {round(counts/(36*320) * 100, 2)}% | {((500-capacity)/500)*100}%"
+        )
+
+    # def count_slot_occupancy(self):
+    #     requests = np.count_nonzero(self.content.astype(int))
+    #     print(f"Zajętość slotów wynosi: {round(requests/(36*320) * 100, 2)}%")
 
 
 # if __name__ == "__main__":

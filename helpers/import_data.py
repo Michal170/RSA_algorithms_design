@@ -42,5 +42,6 @@ def load_paths(path: str) -> np.array:
 
     X = np.loadtxt(path, dtype=int)
     length = int(len(X) / 30)
-    X = X.reshape((length, 30, 36))
+    X = X.reshape((length, 30, X.shape[1]))
+    # X = X.reshape((length, 30, 36))
     return np.array(X)
