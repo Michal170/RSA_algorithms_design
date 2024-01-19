@@ -6,11 +6,11 @@ import numpy as np
 class Verification:
     def __init__(self, file, dataset, slot) -> None:
         self.filename = file
-        self.content = self.read_algorith_result()
+        self.content = self.read_algorithm_result()
         self.dataset = dataset
         self.slot = slot
 
-    def read_algorith_result(self):
+    def read_algorithm_result(self):
         content = np.genfromtxt(self.filename)
         return content
 
@@ -27,9 +27,9 @@ class Verification:
 
         capacity = len(missing_requests)
         counts = np.count_nonzero(self.content.astype(int))
-        print(
-            f"  {round(counts/(shape*self.slot) * 100, 2)}%          |            {round((((probe-capacity)/probe)*100),2)}%"
-        )
+        # print(
+        #     f"  {round(counts/(shape*self.slot) * 100, 2)}%          |            {round((((probe-capacity)/probe)*100),2)}%"
+        # )
         occupancy = round(counts / (shape * self.slot), 5)
         block = round(((probe - capacity) / probe), 5)
         return [occupancy, block]

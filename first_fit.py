@@ -1,31 +1,27 @@
 import csv
 import numpy as np
 from helpers.import_data import load_paths, load_demands
-
-# from demand import Demand
 from helpers.mappings import path_names, path_index
 from helpers.distances import distances
 from base import Base
-from test import Verification
+from verification import Verification
 from helpers.distances import import_distances
 import math
+import os
 
 
 class OpticalNetwork(Base):
-    def __init__(self, node, data, dataset) -> None:
+    def __init__(self, node, data, dataset, slot) -> None:
         super().__init__()
         self.node = node
+        self.slot = slot
         self.dataset = dataset
         self.path_index = path_index
         self.distances = distances
+        self.chosen_path_distances = []
         self.path_matrix = load_paths(f"./{dataset}/{dataset}.pat")
-        # self.path_matrix = load_paths(f"./US26/us26.pat")
-        # self.path_matrix = load_paths("./POL12/pol12.pat")
         self.requests_matrix = load_demands(f"./{dataset}/demands_{data}")
-        # self.requests_matrix = load_demands(f"./POL12/demands_{data}")
         self.distances_matrix = import_distances(f"{dataset}/{dataset}.net")
-        # self.distances_matrix = import_distances("POL12/pol12.net")
-        self.slot_matrix = np.zeros((320, np.shape(self.path_matrix)[2]), dtype=int)
         self.blocks = []
         self.iteration = 1
         self.slots_to_reserve = 0
@@ -34,36 +30,48 @@ class OpticalNetwork(Base):
         self.distance = 0
 
     def allocate_first_fit_part(self):
+        self.slot_matrix = []
+        self.slot_matrix = np.zeros(
+            (self.slot, np.shape(self.path_matrix)[2]), dtype=int
+        )
         for request in self.requests_matrix:
             self.source = request[0]
             self.destination = request[1]
-            self.number_of_slots = self.choose_slots_num(self.distance, request[3])
+            self.bitrate = request[3]
             number_index = self.calcute_path_matrix_number()
             self.find_path_and_slots(number_index)
             self.iteration = self.iteration + 1
 
-        np.savetxt("reserve_ff.txt", self.slot_matrix, fmt="%d", delimiter="\t")
-        np.savetxt("block_ff.txt", self.blocks, fmt="%d", delimiter="\t")
-        result = Verification("reserve_ff.txt", self.dataset)
-        result.verify_algorithm()
-        # result.count_slot_occupancy()
-        return self.slot_matrix
+        os.makedirs("results", exist_ok=True)
+        output_file_path = os.path.join("results", f"reserve_ff.txt")
+        np.savetxt(output_file_path, self.slot_matrix, fmt="%d", delimiter="\t")
+        output_file_path = os.path.join("results", f"block_ff.txt")
+        np.savetxt(output_file_path, self.blocks, fmt="%d", delimiter="\t")
+        result = Verification("results/reserve_ff.txt", self.dataset, self.slot)
+        occupancy, block = result.verify_algorithm()
+        return occupancy, block
 
     def allocate_worst_fit_part(self):
+        self.slot_matrix = []
+        self.slot_matrix = np.zeros(
+            (self.slot, np.shape(self.path_matrix)[2]), dtype=int
+        )
         for request in self.requests_matrix:
             self.source = request[0]
             self.destination = request[1]
-            self.number_of_slots = self.choose_slots_num(self.distance, request[3])
+            self.bitrate = request[3]
             number_index = self.calcute_path_matrix_number()
             self.find_path_and_slots_worst_fit(number_index)
             self.iteration = self.iteration + 1
 
-        np.savetxt("reserve_wf.txt", self.slot_matrix, fmt="%d", delimiter="\t")
-        np.savetxt("block_wf.txt", self.blocks, fmt="%d", delimiter="\t")
-        result = Verification("reserve_wf.txt", self.dataset)
-        result.verify_algorithm()
-        # result.count_slot_occupancy()
-        return self.slot_matrix
+        os.makedirs("results", exist_ok=True)
+        output_file_path = os.path.join("results", f"reserve_wf.txt")
+        np.savetxt(output_file_path, self.slot_matrix, fmt="%d", delimiter="\t")
+        output_file_path = os.path.join("results", f"block_wf.txt")
+        np.savetxt(output_file_path, self.blocks, fmt="%d", delimiter="\t")
+        result = Verification("results/reserve_wf.txt", self.dataset, self.slot)
+        occupancy, block = result.verify_algorithm()
+        return occupancy, block
 
     def allocate_worst_fit_part_next(self):
         index = 4
@@ -84,12 +92,14 @@ class OpticalNetwork(Base):
                 count += 1
 
             index += 1
-        np.savetxt("reserve_wf_second.txt", self.slot_matrix, fmt="%d", delimiter="\t")
-        np.savetxt("block_wf_second.txt", self.blocks, fmt="%d", delimiter="\t")
-        result = Verification("reserve_wf_second.txt", self.dataset)
-        result.verify_algorithm()
-        # result.count_slot_occupancy()
-        return self.slot_matrix
+        os.makedirs("results", exist_ok=True)
+        output_file_path = os.path.join("results", f"reserve_wf_second.txt")
+        np.savetxt(output_file_path, self.slot_matrix, fmt="%d", delimiter="\t")
+        output_file_path = os.path.join("results", f"block_wf_second.txt")
+        np.savetxt(output_file_path, self.blocks, fmt="%d", delimiter="\t")
+        result = Verification("results/reserve_wf_second.txt", self.dataset, self.slot)
+        occupancy, block = result.verify_algorithm()
+        return occupancy, block
 
     def allocate_first_fit_part_next(self):
         index = 4
@@ -110,17 +120,16 @@ class OpticalNetwork(Base):
                 count += 1
 
             index += 1
-            np.savetxt(
-                "reserve_ff_second.txt",
-                self.slot_matrix,
-                fmt="%d",
-                delimiter="\t",
-            )
-            np.savetxt("block_ff_second.txt", self.blocks, fmt="%d", delimiter="\t")
-        result_best = Verification("reserve_ff_second.txt", self.dataset)
+        os.makedirs("results", exist_ok=True)
+        output_file_path = os.path.join("results", f"reserve_ff_second.txt")
+        np.savetxt(output_file_path, self.slot_matrix, fmt="%d", delimiter="\t")
+        output_file_path = os.path.join("results", f"block_ff_second.txt")
+        result_best = Verification(
+            "results/reserve_ff_second.txt", self.dataset, self.slot
+        )
 
-        # result_best.count_slot_occupancy()
-        result_best.verify_algorithm()
+        occupancy, block = result_best.verify_algorithm()
+        return occupancy, block
 
     def _release_slots(self, slots):
         index = np.where(self.slot_matrix == slots)
@@ -155,11 +164,14 @@ class OpticalNetwork(Base):
                     index_list.append(i)
                     distance += self.distances_matrix[i]
             self.distance = distance
+            self.number_of_slots = self.choose_slots_num(self.distance, self.bitrate)
+
             if self.check_if_slots_empty(index_list):
                 temp_status = True
                 break
             else:
                 continue
+        self.chosen_path_distances.append(distance)
         if temp_status == False:
             self.blocks.append([self.source, self.destination, self.iteration])
         else:
@@ -172,6 +184,7 @@ class OpticalNetwork(Base):
         Otherwise route will be added to blocking table.
 
         """
+
         path_list = np.array(self.path_matrix[path_matrix_number])
         distance = 0
         for path in path_list:
@@ -182,6 +195,7 @@ class OpticalNetwork(Base):
                     index_list.append(i)
                     distance += self.distances_matrix[i]
             self.distance = distance
+            self.number_of_slots = self.choose_slots_num(self.distance, self.bitrate)
             if self.check_if_slots_empty_worst_fit(index_list):
                 temp_status = True
                 break
@@ -273,34 +287,10 @@ if __name__ == "__main__":
     node_pol = 11
     dataset_us = "us26"
     dataset_pol = "pol12"
-    # print("First fit:")
-    # first_fit = OpticalNetwork(node)
-    # first_fit.allocate_first_fit_part()
-    # first_fit.allocate_first_fit_part_next()
-
-    # print("-----------------------------------------")
-
-    # print("Worst fit part:")
-    # worst_fit = OpticalNetwork(node)
-    # worst_fit.allocate_worst_fit_part()
-    # worst_fit.allocate_worst_fit_part_next()
-    print("Zajętość slotu   |   Obsłużone żądania")
-    for i in range(10):
-        # print(f"----------- Iteracja {i+1} ------------")
-        # first_fit = OpticalNetwork(node, i)
-        # first_fit.allocate_first_fit_part()
-        # first_fit.allocate_first_fit_part_next()
-
-        # worst_fit = OpticalNetwork(node, i)
-        # worst_fit.allocate_worst_fit_part()
-        # worst_fit.allocate_worst_fit_part_next()
-
-        print(f"------------- demands_{i} -------------")
-        first_fit = OpticalNetwork(node_pol, i, dataset_pol)
-        first_fit.allocate_first_fit_part()
-        first_fit.allocate_first_fit_part_next()
-        print(f"\n-------Worst fit-------\n")
-        worst_fit = OpticalNetwork(node_pol, i, dataset_pol)
-        worst_fit.allocate_worst_fit_part()
-        worst_fit.allocate_first_fit_part_next()
-        print(f"\n##########################################\n")
+    slot = 320
+    first_fit = OpticalNetwork(node_pol, 0, dataset_pol, 320)
+    first_fit.allocate_first_fit_part()
+    first_fit.allocate_first_fit_part_next()
+    worst_fit = OpticalNetwork(node_pol, 0, dataset_pol, slot)
+    worst_fit.allocate_worst_fit_part()
+    worst_fit.allocate_worst_fit_part_next()
