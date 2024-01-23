@@ -41,7 +41,9 @@ class Base(object):
             result = func(*args, **kwargs)
             end_time = time.time()
             execution_time = end_time - start_time
-            print(f"Execution time of {func.__name__}: {execution_time} seconds")
+            text = f"Execution time of {func.__name__}: {execution_time} seconds"
+            with open("wyniki_pomiaru_czasu.txt", "a") as file:
+                file.write(text)
             return result
 
         return wrapper

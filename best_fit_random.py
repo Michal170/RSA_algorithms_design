@@ -12,10 +12,10 @@ import random
 
 
 class BestRandomAlgorithm(Base):
-    def __init__(self, node_num: int = 12) -> None:
+    def __init__(self, slot, node_num: int = 12) -> None:
         super().__init__(node_num)
         self.node = 11
-        self.slot = 950
+        self.slot = slot
         dataset = "pol12"
         self.block = []
         data = 0
@@ -52,14 +52,63 @@ class BestRandomAlgorithm(Base):
             self.find_slot()
             self.iteration = self.iteration + 1
 
-            np.savetxt("reserve_rand.txt", self.slot_matrix, fmt="%d", delimiter="\t")
-        np.savetxt("block_rand.txt", self.blocked_request, fmt="%d", delimiter="\t")
-        result = Verification("reserve_rand.txt", "pol12", self.slot)
+        np.savetxt(
+            "results/reserve_rand.txt", self.slot_matrix, fmt="%d", delimiter="\t"
+        )
+        np.savetxt(
+            "results/block_rand.txt", self.blocked_request, fmt="%d", delimiter="\t"
+        )
+        result = Verification("results/reserve_rand.txt", "pol12", self.slot)
         result.read_algorithm_result()
         # result.verify_algorithm()
         occupancy, block = result.verify_algorithm()
         return occupancy, block
         # break
+
+    def allocate_first_fit_part_next(self):
+        index = 4
+
+        for bitrate_value in range(4, np.shape(self.requests_matrix)[1]):
+            count = 0
+            for request in self.requests_matrix:
+                slots = Base.choose_slots_num(800, request[bitrate_value])
+                previous_slots = Base.choose_slots_num(800, request[bitrate_value - 1])
+                if slots != previous_slots:
+                    self.number_of_slots = slots
+                    self._release_slots(count)
+                    self.source = request[0]
+                    self.destination = request[1]
+                    self.iteration = count
+                    # path = self.calcute_path_matrix_number()
+                    self.path_matrix_data = self.calcute_path_matrix_number()
+                    # self.find_path_and_slots(path)
+                    self.find_slot()
+                count += 1
+
+            index += 1
+        np.savetxt(
+            "results/block_rand_next_part.txt",
+            self.blocked_request,
+            fmt="%d",
+            delimiter="\t",
+        )
+        np.savetxt(
+            "results/reserve_rand_next_part.txt",
+            self.slot_matrix,
+            fmt="%d",
+            delimiter="\t",
+        )
+        result = Verification("results/reserve_rand_next_part.txt", "pol12", self.slot)
+        result.read_algorithm_result()
+        # result.verify_algorithm()
+        occupancy, block = result.verify_algorithm()
+        return occupancy, block
+
+    def _release_slots(self, slots):
+        index = np.where(self.slot_matrix == slots)
+        # print("zwolnienie slotu:", index)
+        for idx in range(len(index[0])):
+            self.slot_matrix[index[0][idx]][index[1][idx]] = 0
 
     def draw_path(self):
         path_index = np.random.randint(0, 29)
@@ -78,7 +127,7 @@ class BestRandomAlgorithm(Base):
                 index_draw_list.append(index)
             if len(index_draw_list) >= 29:
                 self.blocked_request.append(self.iteration)
-                # print(self.blocks)
+                # print("self.blocks", self.iteration)
                 # print(f"BREAK{self.iteration}")
                 flag = True
                 break
@@ -96,8 +145,6 @@ class BestRandomAlgorithm(Base):
                 result &= self.slot_matrix[:, index] == 0
             self.available_slots = np.where(result)[0]
             flag = self.check_if_slot_empty()
-            # print("flaga:", flag, self.slots_to_reserve)
-            # print(self.slots_to_reserve)
             result = self.reserve_slots(index_list)
             # flag = True
             if flag == True:
@@ -126,6 +173,7 @@ class BestRandomAlgorithm(Base):
         """
         Function makes a reservation
         """
+
         for index in index_list:
             for slot in range(self.number_of_slots):
                 if np.shape(self.slots_to_reserve)[0] >= self.number_of_slots:
@@ -140,10 +188,12 @@ class BestRandomAlgorithm(Base):
 
                 else:
                     self.blocks.append([self.source, self.destination])
+        print("rezerwacja:", self.iteration)
         return True
         # self.slot_matrix[self.slots_to_reserve[slot]][index] = self.iteration
 
 
 if __name__ == "__main__":
-    alg = BestRandomAlgorithm()
+    alg = BestRandomAlgorithm(slot=320)
     alg.best_random_algorithm()
+    alg.allocate_first_fit_part_next()
