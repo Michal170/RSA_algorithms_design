@@ -5,7 +5,7 @@ from best_fit_random import BestRandomAlgorithm
 from base import Base
 
 
-def prepare_exp_best_fit_first_alloc():
+def prepare_exp_first_fit_first_alloc():
     node_us = 25
     node_pol = 11
     dataset_us = "us26"
@@ -16,21 +16,21 @@ def prepare_exp_best_fit_first_alloc():
     print(result.shape)
 
     for i in range(1, slot):
-        first_fit = OpticalNetwork(node_pol, 0, dataset_pol, i)
+        first_fit = OpticalNetwork(node_us, 0, dataset_us, i)
         slots_occupancy, slot_unserved = first_fit.allocate_first_fit_part()
         result[i][0] = slots_occupancy * 100
         result[i][1] = slot_unserved * 100
 
-        c, d = first_fit.allocate_first_fit_part_next()
+        # c, d = first_fit.allocate_first_fit_part_next()
     plt.figure(1)
     plt.plot(
         result[:, 0], color="blue", label="Zajętość dostępnych slotów", linewidth=1
     )
     plt.plot(
         result[:, 1],
-        color="red",
+        color="green",
         linestyle="--",
-        label="Żądanie nieobsłużone",
+        label="Żądania obsłużone",
         linewidth=0.5,
     )
     plt.grid(which="both", linestyle="--", linewidth=0.5)
@@ -39,51 +39,51 @@ def prepare_exp_best_fit_first_alloc():
     plt.ylim(0, 100)
     plt.xlabel("Ilość dostępnych slotów[szt]")
     plt.ylabel("Zajętość [%]")
-    plt.title("Eksperyment nr.1, best fit, zbiór POL12")
+    plt.title("Eksperyment nr.1, First Fit, zbiór US26/demands_0")
     plt.legend()
-    plt.savefig("img/best_fit_pol12.png", dpi=150)
+    plt.savefig("img/exp_1_first_fit_us26.png", dpi=150)
 
 
-def prepare_exp_worst_fit_first_alloc():
+def prepare_exp_last_fit_first_alloc():
     node_us = 25
     node_pol = 11
     dataset_us = "us26"
     dataset_pol = "pol12"
-    slot = 320
-    result = []
-    result = np.zeros((slot, 2), dtype=int)
-    print(result.shape)
+    slot = 500
+    result_wf = []
+    result_wf = np.zeros((slot, 2), dtype=int)
+    print(result_wf.shape)
 
     for i in range(1, slot):
-        first_fit = OpticalNetwork(node_pol, 0, dataset_pol, i)
-        slots_occupancy, slot_unserved = first_fit.allocate_worst_fit_part
-        result[i][0] = slots_occupancy * 100
-        result[i][1] = slot_unserved * 100
+        first_fit = OpticalNetwork(node_us, 0, dataset_us, i)
+        slots_occupancy, slot_unserved = first_fit.allocate_last_fit_part()
+        result_wf[i][0] = slots_occupancy * 100
+        result_wf[i][1] = slot_unserved * 100
 
-        c, d = first_fit.allocate_first_fit_part_next()
     plt.figure(1)
     plt.plot(
-        result[:, 0], color="blue", label="Zajętość dostępnych slotów", linewidth=1
+        result_wf[:, 0], color="blue", label="Zajętość dostępnych slotów", linewidth=1
     )
     plt.plot(
-        result[:, 1],
-        color="red",
+        result_wf[:, 1],
+        color="green",
         linestyle="--",
-        label="Żądanie nieobsłużone",
+        label="Żądania obsłużone",
         linewidth=0.5,
     )
-    plt.xticks(np.arange(1, slot, 20))
+    plt.grid(which="both", linestyle="--", linewidth=0.5)
+    plt.xticks(np.arange(0, slot, 20))
     plt.xlim(1, slot)
     plt.ylim(1, 100)
     plt.xlabel("Ilość dostępnych slotów[szt]")
     plt.ylabel("Zajętość [%]")
-    plt.title("Eksperyment nr.1, worst fit, zbiór POL12")
+    plt.title("Eksperyment nr.1, Last fit, zbiór US26/demands_0")
     plt.legend()
-    plt.savefig("worst_fit_pol12.png", dpi=150)
-    print(result)
+    plt.savefig("img/exp_1_last_fit_us26.png", dpi=150)
+    print(result_wf)
 
 
-def prepare_exp_random_best_fit_first_alloc():
+def prepare_exp_random_first_fit_first_alloc():
     node_us = 25
     node_pol = 11
     dataset_us = "us26"
@@ -106,9 +106,9 @@ def prepare_exp_random_best_fit_first_alloc():
     )
     plt.plot(
         result[:, 1],
-        color="red",
+        color="green",
         linestyle="--",
-        label="Żądanie nieobsłużone",
+        label="Żądania obsłużone",
         linewidth=0.5,
     )
     plt.xticks(np.arange(1, 1000, 50))
@@ -116,21 +116,11 @@ def prepare_exp_random_best_fit_first_alloc():
     plt.ylim(1, 100)
     plt.xlabel("Ilość dostępnych slotów[szt]")
     plt.ylabel("Zajętość [%]")
-    plt.title("Eksperyment nr.1 dla best fit z losowym wybieranie ścieżki, zbiór POL12")
+    plt.title("Eksperyment nr.1 dla First Fit z losowym wybieranie ścieżki, zbiór us26")
     plt.legend()
-    plt.savefig("best__random_fit_pol12.png", dpi=150)
+    plt.savefig("img/exp_1_first_random_fit_us26.png", dpi=150)
 
 
 if __name__ == "__main__":
-    wrap = Base()
-
-    @wrap.measure_execution_time(prepare_exp_best_fit_first_alloc())
-    def main():
-        prepare_exp_best_fit_first_alloc()
-        # prepare_exp_worst_fit_first_alloc()
-
-    @wrap.measure_execution_time(prepare_exp_best_fit_first_alloc())
-    def main_2():
-        prepare_exp_worst_fit_first_alloc()
-
-    main_2()
+    # prepare_exp_first_fit_first_alloc()
+    prepare_exp_last_fit_first_alloc()
