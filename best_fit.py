@@ -44,7 +44,7 @@ class BestFit(Base):
         output_file_path = os.path.join("results", f"fill.txt")
         np.savetxt(output_file_path, self.slot_matrix, fmt="%d", delimiter="\t")
 
-    def allocate_best_fit(self):
+    def allocate_part(self):
         self.slot_matrix = []
         self.slot_matrix = np.zeros(
             (self.slot, np.shape(self.path_matrix)[2]), dtype=int
@@ -67,7 +67,7 @@ class BestFit(Base):
         occupancy, block = result.verify_algorithm()
         return occupancy, block
 
-    def allocate_best_fit_part_next(self):
+    def allocate_part_next(self):
         index = 4
 
         for bitrate_value in range(4, np.shape(self.requests_matrix)[1]):

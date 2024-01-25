@@ -44,7 +44,7 @@ class OpticalNetwork(Base):
         output_file_path = os.path.join("results", f"fill.txt")
         np.savetxt(output_file_path, self.slot_matrix, fmt="%d", delimiter="\t")
 
-    def allocate_first_fit_part(self):
+    def allocate_part(self):
         self.slot_matrix = []
         self.slot_matrix = np.zeros(
             (self.slot, np.shape(self.path_matrix)[2]), dtype=int
@@ -67,57 +67,57 @@ class OpticalNetwork(Base):
         occupancy, block = result.verify_algorithm()
         return occupancy, block
 
-    def allocate_last_fit_part(self):
-        self.slot_matrix = []
-        self.slot_matrix = np.zeros(
-            (self.slot, np.shape(self.path_matrix)[2]), dtype=int
-        )
-        for request in self.requests_matrix:
-            self.source = request[0]
-            self.destination = request[1]
-            self.bitrate = request[3]
-            number_index = self.calcute_path_matrix_number()
-            self.find_path_and_slots_last_fit(number_index)
-            self.iteration = self.iteration + 1
+    # def allocate_last_fit_part(self):
+    #     self.slot_matrix = []
+    #     self.slot_matrix = np.zeros(
+    #         (self.slot, np.shape(self.path_matrix)[2]), dtype=int
+    #     )
+    #     for request in self.requests_matrix:
+    #         self.source = request[0]
+    #         self.destination = request[1]
+    #         self.bitrate = request[3]
+    #         number_index = self.calcute_path_matrix_number()
+    #         self.find_path_and_slots_last_fit(number_index)
+    #         self.iteration = self.iteration + 1
 
-        os.makedirs("results", exist_ok=True)
-        output_file_path = os.path.join("results", f"reserve_wf.txt")
-        np.savetxt(output_file_path, self.slot_matrix, fmt="%d", delimiter="\t")
-        output_file_path = os.path.join("results", f"block_wf.txt")
-        np.savetxt(output_file_path, self.blocks, fmt="%d", delimiter="\t")
-        result = Verification("results/reserve_wf.txt", self.dataset, self.slot)
-        occupancy, block = result.verify_algorithm()
-        return occupancy, block
+    #     os.makedirs("results", exist_ok=True)
+    #     output_file_path = os.path.join("results", f"reserve_wf.txt")
+    #     np.savetxt(output_file_path, self.slot_matrix, fmt="%d", delimiter="\t")
+    #     output_file_path = os.path.join("results", f"block_wf.txt")
+    #     np.savetxt(output_file_path, self.blocks, fmt="%d", delimiter="\t")
+    #     result = Verification("results/reserve_wf.txt", self.dataset, self.slot)
+    #     occupancy, block = result.verify_algorithm()
+    #     return occupancy, block
 
-    def allocate_last_fit_part_next(self):
-        index = 4
+    # def allocate_last_fit_part_next(self):
+    #     index = 4
 
-        for bitrate_value in range(4, np.shape(self.requests_matrix)[1]):
-            count = 0
-            for request in self.requests_matrix:
-                slots = Base.choose_slots_num(800, request[bitrate_value])
-                previous_slots = Base.choose_slots_num(800, request[bitrate_value - 1])
-                if slots != previous_slots:
-                    self.number_of_slots = slots
-                    self._release_slots(count)
-                    self.source = request[0]
-                    self.destination = request[1]
-                    self.iteration = count
-                    path = self.calcute_path_matrix_number()
-                    self.find_path_and_slots_last_fit(path)
-                count += 1
+    #     for bitrate_value in range(4, np.shape(self.requests_matrix)[1]):
+    #         count = 0
+    #         for request in self.requests_matrix:
+    #             slots = Base.choose_slots_num(800, request[bitrate_value])
+    #             previous_slots = Base.choose_slots_num(800, request[bitrate_value - 1])
+    #             if slots != previous_slots:
+    #                 self.number_of_slots = slots
+    #                 self._release_slots(count)
+    #                 self.source = request[0]
+    #                 self.destination = request[1]
+    #                 self.iteration = count
+    #                 path = self.calcute_path_matrix_number()
+    #                 self.find_path_and_slots_last_fit(path)
+    #             count += 1
 
-            index += 1
-        os.makedirs("results", exist_ok=True)
-        output_file_path = os.path.join("results", f"reserve_wf_second.txt")
-        np.savetxt(output_file_path, self.slot_matrix, fmt="%d", delimiter="\t")
-        output_file_path = os.path.join("results", f"block_wf_second.txt")
-        np.savetxt(output_file_path, self.blocks, fmt="%d", delimiter="\t")
-        result = Verification("results/reserve_wf_second.txt", self.dataset, self.slot)
-        occupancy, block = result.verify_algorithm()
-        return occupancy, block
+    #         index += 1
+    #     os.makedirs("results", exist_ok=True)
+    #     output_file_path = os.path.join("results", f"reserve_wf_second.txt")
+    #     np.savetxt(output_file_path, self.slot_matrix, fmt="%d", delimiter="\t")
+    #     output_file_path = os.path.join("results", f"block_wf_second.txt")
+    #     np.savetxt(output_file_path, self.blocks, fmt="%d", delimiter="\t")
+    #     result = Verification("results/reserve_wf_second.txt", self.dataset, self.slot)
+    #     occupancy, block = result.verify_algorithm()
+    #     return occupancy, block
 
-    def allocate_first_fit_part_next(self):
+    def allocate_part_next(self):
         index = 4
 
         for bitrate_value in range(4, np.shape(self.requests_matrix)[1]):

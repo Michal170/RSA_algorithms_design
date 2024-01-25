@@ -27,13 +27,9 @@ class Verification:
 
         capacity = len(missing_requests)
         counts = np.count_nonzero(self.content.astype(int))
-        # print(
-        #     f"  {round(counts/(shape*self.slot) * 100, 2)}%          |            {round((((probe-capacity)/probe)*100),2)}%"
-        # )
-
-        occupancy = round(counts / (shape * self.slot), 5)
-        block = round(((probe - capacity) / probe), 5)
+        occupancy = round(counts / (shape * self.slot), 5) * 100
+        block = round(((probe - capacity) / probe), 5) * 100
         print(
-            f"  {round(counts / (shape * self.slot), 3) * 100}%          |            {round(((probe - capacity) / probe), 3) * 100} %"
+            f"{round(counts / (shape * self.slot), 5) * 100}%          |            {round(((probe - capacity) / probe), 5) * 100} %"
         )
         return [occupancy, block]
