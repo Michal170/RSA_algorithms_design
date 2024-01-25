@@ -216,6 +216,6 @@ if __name__ == "__main__":
     dataset_us = "us26"
     dataset_pol = "pol12"
     slot = 320
-    best_fit = BestFit(node_pol, 0, dataset_pol, slot)
+    best_fit = BestFit(node_us, 0, dataset_us, slot)
     best_fit.allocate_best_fit()
     best_fit.allocate_best_fit_part_next()

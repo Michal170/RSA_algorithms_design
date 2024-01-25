@@ -188,7 +188,7 @@ class BestRandomAlgorithm(Base):
 
                 else:
                     self.blocks.append([self.source, self.destination])
-        print("rezerwacja:", self.iteration)
+        # print("rezerwacja:", self.iteration)
         return True
         # self.slot_matrix[self.slots_to_reserve[slot]][index] = self.iteration
 
