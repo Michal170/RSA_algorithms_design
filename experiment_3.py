@@ -30,29 +30,40 @@ def expe_3(node, dataset, scope=10, fill=0):
         "Processed requests(fill=25%)[%]",
     ]
     fill = [0.0, 0.05, 0.15, 0.25]
-    for j in range(2):
-        # for j in range(len(name_list)):
+    for j in range(4):
         print(f"Eksperyment nr.3, Algorytm{alg_name[j]}")
         data = []
         file_name = alg_name[j]
         for i in range(scope):
+            print("demand_", i)
             time_record = []
-            b = []
+            data_temp = []
             for k in range(len(fill)):
-                start_time = time.time()
-                row = [f"{dataset}/demands_{i}"]
-                row_time = [f" "]
+                a = np.zeros(10)
+                b = np.zeros(10)
+                time_exec = []
+                for h in range(10):
+                    start_time = time.time()
+                    row = [f"{dataset}/demands_{i}"]
+                    row_time = [f" "]
 
-                alg = name_list[j]
-                func = alg(node, i, dataset, slot, fill[k])
-                func.allocate_part()
-                a, b_ = func.allocate_part_next()
-                end_time = time.time()
+                    alg = name_list[j]
+                    func = alg(node, i, dataset, slot, fill[k])
+                    func.allocate_part()
+                    a_k, b_k = func.allocate_part_next()
+                    a[h] = a_k
+                    b[h] = b_k
+                    end_time = time.time()
 
-                execution_time = end_time - start_time
-                b.append(round(b_, 2))
-                time_record.append(f"{round(execution_time,2)}s")
-            row.extend([(b[0]), b[1], b[2], b[3]])
+                    execution_time = end_time - start_time
+                    time_exec.append(execution_time)
+                average_a = np.mean(a)
+                average_b = np.mean(b)
+                average_time_exec = np.mean(time_exec)
+                data_temp.append(round(average_b, 2))
+
+                time_record.append(f"{round(average_time_exec,2)}s")
+            row.extend([(data_temp[0]), data_temp[1], data_temp[2], data_temp[3]])
             row_time.extend(
                 [(time_record[0]), time_record[1], time_record[2], time_record[3]]
             )
