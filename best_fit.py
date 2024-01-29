@@ -64,8 +64,6 @@ class BestFit(Base):
         output_file_path = os.path.join("results", f"block_bf.txt")
         np.savetxt(output_file_path, self.blocks, fmt="%d", delimiter="\t")
         result = Verification("results/reserve_bf.txt", self.dataset, self.slot)
-        occupancy, block = result.verify_algorithm()
-        return occupancy, block
 
     def allocate_part_next(self):
         index = 4

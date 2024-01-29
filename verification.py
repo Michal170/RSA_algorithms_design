@@ -30,6 +30,6 @@ class Verification:
         occupancy = round(counts / (shape * self.slot), 5) * 100
         block = round(((probe - capacity) / probe), 5) * 100
         print(
-            f"{round(counts / (shape * self.slot), 5) * 100}%          |            {round(((probe - capacity) / probe), 5) * 100} %"
+            f"Zajętość:{round(occupancy,2)}%          |            Obsłużono {round(block,2)}% żądań "
         )
         return [occupancy, block]

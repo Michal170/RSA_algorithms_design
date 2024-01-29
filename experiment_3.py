@@ -7,7 +7,7 @@ import timeit
 from last_fit import LastFit
 from best_fit import BestFit
 from tabulate import tabulate
-from best_fit_random import BestRandomAlgorithm
+from first_fit_random import First_Fit_Random_Path
 
 
 def expe_3(node, dataset, scope=10, fill=0):
@@ -20,19 +20,8 @@ def expe_3(node, dataset, scope=10, fill=0):
     result = []
 
     result = np.zeros((slot, 2), dtype=int)
-    name_list = [OpticalNetwork, LastFit, BestFit, BestRandomAlgorithm]
+    name_list = [OpticalNetwork, LastFit, BestFit, First_Fit_Random_Path]
     alg_name = ["FirstFit", "LastFit", "BestFit", "FFRandomAlgorithm"]
-    # headers = [
-    #     "Zbiór",
-    #     "First-Fit",
-    #     "First-Fit",
-    #     "Last-Fit",
-    #     "Last-Fit",
-    #     "Best-Fit",
-    #     "Best-Fit",
-    #     "FF rand path",
-    #     "FF rand path",
-    # ]
     headers = [
         "Dataset",
         "Processed requests(fill=0%)[%]",
@@ -41,7 +30,9 @@ def expe_3(node, dataset, scope=10, fill=0):
         "Processed requests(fill=25%)[%]",
     ]
     fill = [0.0, 0.05, 0.15, 0.25]
-    for j in range(4):
+    for j in range(2):
+        # for j in range(len(name_list)):
+        print(f"Eksperyment nr.3, Algorytm{alg_name[j]}")
         data = []
         file_name = alg_name[j]
         for i in range(scope):
@@ -49,7 +40,6 @@ def expe_3(node, dataset, scope=10, fill=0):
             b = []
             for k in range(len(fill)):
                 start_time = time.time()
-                # print(k, fill[k])
                 row = [f"{dataset}/demands_{i}"]
                 row_time = [f" "]
 
@@ -62,7 +52,6 @@ def expe_3(node, dataset, scope=10, fill=0):
                 execution_time = end_time - start_time
                 b.append(round(b_, 2))
                 time_record.append(f"{round(execution_time,2)}s")
-            # print("lista:", b)
             row.extend([(b[0]), b[1], b[2], b[3]])
             row_time.extend(
                 [(time_record[0]), time_record[1], time_record[2], time_record[3]]
@@ -73,7 +62,6 @@ def expe_3(node, dataset, scope=10, fill=0):
 
         table = tabulate(data, headers, tablefmt="grid")
         os.makedirs("tables", exist_ok=True)
-        # file_name = alg_name[alg]
         output_file_path = os.path.join("tables", f"exp_3_{file_name}_{dataset}.txt")
         table_lt = tabulate(data, headers, tablefmt="latex")
         with open(output_file_path, "w") as file:
@@ -81,9 +69,10 @@ def expe_3(node, dataset, scope=10, fill=0):
 
 
 if __name__ == "__main__":
+    """Eksperyment nr.3
+    Należy uruchomić ten plik, wyniki będą dostępne w katalogu tables/exp_3_*"""
     node_us = 25
     node_pol = 11
     dataset_us = "us26"
     dataset_pol = "pol12"
-    slot = 320
-    expe_3(node_us, dataset_us, 10)
+    expe_3(node_pol, dataset_pol, 10)

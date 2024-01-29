@@ -1,4 +1,3 @@
-import csv
 import numpy as np
 from helpers.import_data import load_paths, load_demands
 from helpers.mappings import path_names, path_index
@@ -64,58 +63,8 @@ class OpticalNetwork(Base):
         output_file_path = os.path.join("results", f"block_ff.txt")
         np.savetxt(output_file_path, self.blocks, fmt="%d", delimiter="\t")
         result = Verification("results/reserve_ff.txt", self.dataset, self.slot)
-        occupancy, block = result.verify_algorithm()
-        return occupancy, block
-
-    # def allocate_last_fit_part(self):
-    #     self.slot_matrix = []
-    #     self.slot_matrix = np.zeros(
-    #         (self.slot, np.shape(self.path_matrix)[2]), dtype=int
-    #     )
-    #     for request in self.requests_matrix:
-    #         self.source = request[0]
-    #         self.destination = request[1]
-    #         self.bitrate = request[3]
-    #         number_index = self.calcute_path_matrix_number()
-    #         self.find_path_and_slots_last_fit(number_index)
-    #         self.iteration = self.iteration + 1
-
-    #     os.makedirs("results", exist_ok=True)
-    #     output_file_path = os.path.join("results", f"reserve_wf.txt")
-    #     np.savetxt(output_file_path, self.slot_matrix, fmt="%d", delimiter="\t")
-    #     output_file_path = os.path.join("results", f"block_wf.txt")
-    #     np.savetxt(output_file_path, self.blocks, fmt="%d", delimiter="\t")
-    #     result = Verification("results/reserve_wf.txt", self.dataset, self.slot)
-    #     occupancy, block = result.verify_algorithm()
-    #     return occupancy, block
-
-    # def allocate_last_fit_part_next(self):
-    #     index = 4
-
-    #     for bitrate_value in range(4, np.shape(self.requests_matrix)[1]):
-    #         count = 0
-    #         for request in self.requests_matrix:
-    #             slots = Base.choose_slots_num(800, request[bitrate_value])
-    #             previous_slots = Base.choose_slots_num(800, request[bitrate_value - 1])
-    #             if slots != previous_slots:
-    #                 self.number_of_slots = slots
-    #                 self._release_slots(count)
-    #                 self.source = request[0]
-    #                 self.destination = request[1]
-    #                 self.iteration = count
-    #                 path = self.calcute_path_matrix_number()
-    #                 self.find_path_and_slots_last_fit(path)
-    #             count += 1
-
-    #         index += 1
-    #     os.makedirs("results", exist_ok=True)
-    #     output_file_path = os.path.join("results", f"reserve_wf_second.txt")
-    #     np.savetxt(output_file_path, self.slot_matrix, fmt="%d", delimiter="\t")
-    #     output_file_path = os.path.join("results", f"block_wf_second.txt")
-    #     np.savetxt(output_file_path, self.blocks, fmt="%d", delimiter="\t")
-    #     result = Verification("results/reserve_wf_second.txt", self.dataset, self.slot)
-    #     occupancy, block = result.verify_algorithm()
-    #     return occupancy, block
+        # occupancy, block = result.verify_algorithm()
+        # return occupancy, block
 
     def allocate_part_next(self):
         index = 4
@@ -277,7 +226,6 @@ class OpticalNetwork(Base):
 
         if len(slots_window) == self.number_of_slots and int(self.number_of_slots) != 0:
             self.slots_to_reserve = slots_window
-            # print(slots_window)
             return True
         else:
             return False
@@ -297,17 +245,3 @@ class OpticalNetwork(Base):
                 else:
                     self.blocks.append([self.source, self.destination])
             self.slot_matrix[self.slots_to_reserve[slot]][index] = self.iteration
-
-
-if __name__ == "__main__":
-    node_us = 25
-    node_pol = 11
-    dataset_us = "us26"
-    dataset_pol = "pol12"
-    slot = 320
-    first_fit = OpticalNetwork(node_us, 0, dataset_us, slot, fill_factor=0)
-    first_fit.allocate_first_fit_part()
-    first_fit.allocate_first_fit_part_next()
-# last_fit = OpticalNetwork(node_pol, 0, dataset_pol, slot)
-# last_fit.allocate_last_fit_part()
-# last_fit.allocate_last_fit_part_next()

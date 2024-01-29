@@ -7,39 +7,23 @@ import timeit
 from last_fit import LastFit
 from best_fit import BestFit
 from tabulate import tabulate
-from best_fit_random import BestRandomAlgorithm
+from first_fit_random import First_Fit_Random_Path
 
 
 def expe_2(node, dataset, scope=10):
     """Measurement of the time needed to execute each of the 4 algorithms"""
-    node_us = 25
-    node_pol = 11
-    dataset_us = "us26"
-    dataset_pol = "pol12"
     slot = 320
-    result = []
 
-    result = np.zeros((slot, 2), dtype=int)
-    name_list = [OpticalNetwork, LastFit, BestFit, BestRandomAlgorithm]
+    name_list = [OpticalNetwork, LastFit, BestFit, First_Fit_Random_Path]
     alg_name = ["FirstFit", "LastFit", "BestFit", "FFRandomAlgorithm"]
-    # headers = [
-    #     "Zbiór",
-    #     "First-Fit",
-    #     "First-Fit",
-    #     "Last-Fit",
-    #     "Last-Fit",
-    #     "Best-Fit",
-    #     "Best-Fit",
-    #     "FF rand path",
-    #     "FF rand path",
-    # ]
     headers = [
         "Dataset",
         "Occupied slots[%]",
         "Processed requests[%]",
         "Execution time[s]",
     ]
-    for j in range(3, 4):
+    for j in range(len(name_list)):
+        print(f"Eksperyment nr.2, Algorytm {alg_name[j]}")
         data = []
         file_name = alg_name[j]
         for i in range(scope):
@@ -59,7 +43,6 @@ def expe_2(node, dataset, scope=10):
 
         table = tabulate(data, headers, tablefmt="grid")
         os.makedirs("tables", exist_ok=True)
-        # file_name = alg_name[alg]
         output_file_path = os.path.join("tables", f"exp_2_{file_name}_{dataset}.txt")
         table_lt = tabulate(data, headers, tablefmt="latex")
         with open(output_file_path, "w") as file:
@@ -67,6 +50,8 @@ def expe_2(node, dataset, scope=10):
 
 
 if __name__ == "__main__":
+    """Eksperyment nr.2
+    Należy uruchomić ten plik, wyniki będą dostępne w katalogu tables/exp_2_*"""
     node_us = 25
     node_pol = 11
     dataset_us = "us26"

@@ -63,8 +63,6 @@ class LastFit(Base):
         output_file_path = os.path.join("results", f"block_lf.txt")
         np.savetxt(output_file_path, self.blocks, fmt="%d", delimiter="\t")
         result = Verification("results/reserve_lf.txt", self.dataset, self.slot)
-        occupancy, block = result.verify_algorithm()
-        return occupancy, block
 
     def allocate_part_next(self):
         index = 4
@@ -224,7 +222,6 @@ class LastFit(Base):
 
         if len(slots_window) == self.number_of_slots and int(self.number_of_slots) != 0:
             self.slots_to_reserve = slots_window
-            # print(slots_window)
             return True
         else:
             return False
@@ -244,17 +241,3 @@ class LastFit(Base):
                 else:
                     self.blocks.append([self.source, self.destination])
             self.slot_matrix[self.slots_to_reserve[slot]][index] = self.iteration
-
-
-if __name__ == "__main__":
-    node_us = 25
-    node_pol = 11
-    dataset_us = "us26"
-    dataset_pol = "pol12"
-    slot = 320
-    first_fit = LastFit(node_us, 0, dataset_us, slot, fill_factor=0.0)
-    first_fit.allocate_last_fit_part()
-    first_fit.allocate_last_fit_part_next()
-# last_fit = OpticalNetwork(node_pol, 0, dataset_pol, slot)
-# last_fit.allocate_last_fit_part()
-# last_fit.allocate_last_fit_part_next()

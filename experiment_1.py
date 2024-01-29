@@ -1,7 +1,8 @@
 from first_fit import OpticalNetwork
 import numpy as np
 import matplotlib.pyplot as plt
-from best_fit_random import BestRandomAlgorithm
+from first_fit_random import First_Fit_Random_Path
+from last_fit import LastFit
 from best_fit import BestFit
 from base import Base
 from helpers.time_measure import measure_time
@@ -16,15 +17,15 @@ def prepare_exp_first_fit_first_alloc():
     slot = 800
     result = []
     result = np.zeros((slot, 2), dtype=int)
-    print(result.shape)
 
     for i in range(1, slot):
+        print(f"------ slot:{i}  ------")
         first_fit = OpticalNetwork(node_us, 0, dataset_us, i)
-        slots_occupancy, slot_unserved = first_fit.allocate_first_fit_part()
-        result[i][0] = slots_occupancy * 100
-        result[i][1] = slot_unserved * 100
+        first_fit.allocate_part()
+        slots_occupancy, slot_unserved = first_fit.allocate_part_next()
+        result[i][0] = slots_occupancy
+        result[i][1] = slot_unserved
 
-        # c, d = first_fit.allocate_first_fit_part_next()
     plt.figure(1)
     plt.plot(
         result[:, 0], color="blue", label="Zajętość dostępnych slotów", linewidth=1
@@ -53,19 +54,18 @@ def prepare_exp_best_fit_first_alloc():
     node_pol = 11
     dataset_us = "us26"
     dataset_pol = "pol12"
-    slot = 320
+    slot = 800
     result = []
     result = np.zeros((slot, 2), dtype=int)
-    print(result.shape)
 
     for i in range(1, slot):
+        print(f"------ slot:{i}  ------")
         first_fit = BestFit(node_pol, 0, dataset_pol, i)
-        first_fit.allocate_best_fit()
-        slots_occupancy, slot_unserved = first_fit.allocate_best_fit_part_next()
+        first_fit.allocate_part()
+        slots_occupancy, slot_unserved = first_fit.allocate_part_next()
         result[i][0] = slots_occupancy * 100
         result[i][1] = slot_unserved * 100
 
-        # c, d = first_fit.allocate_first_fit_part_next()
     plt.figure(1)
     plt.plot(
         result[:, 0], color="blue", label="Zajętość dostępnych slotów", linewidth=1
@@ -97,11 +97,12 @@ def prepare_exp_last_fit_first_alloc():
     slot = 800
     result_wf = []
     result_wf = np.zeros((slot, 2), dtype=int)
-    print(result_wf.shape)
 
     for i in range(1, slot):
-        first_fit = OpticalNetwork(node_us, 0, dataset_us, i)
-        slots_occupancy, slot_unserved = first_fit.allocate_last_fit_part()
+        print(f"------ slot:{i}  ------")
+        first_fit = LastFit(node_us, 0, dataset_us, i)
+        first_fit.allocate_part()
+        slots_occupancy, slot_unserved = first_fit.allocate_part_next()
         result_wf[i][0] = slots_occupancy * 100
         result_wf[i][1] = slot_unserved * 100
 
@@ -137,12 +138,11 @@ def prepare_exp_random_first_fit_first_alloc():
     slot = 1100
     result_rand = []
     result_rand = np.zeros((slot, 2), dtype=int)
-    # print(result.shape)
 
-    for i in range(6, slot):
-        print("Iteracja eksperymentu:", i)
-        first_fit = BestRandomAlgorithm(i)
-        slots_occupancy, slot_unserved = first_fit.best_random_algorithm()
+    for i in range(10, slot):
+        print(f"------ slot:{i}  ------")
+        first_fit = First_Fit_Random_Path(node_pol, 0, dataset_pol, i)
+        slots_occupancy, slot_unserved = first_fit.allocate_part()
         result_rand[i][0] = slots_occupancy * 100
         result_rand[i][1] = slot_unserved * 100
 
@@ -163,15 +163,14 @@ def prepare_exp_random_first_fit_first_alloc():
     plt.ylim(1, 100)
     plt.xlabel("Ilość dostępnych slotów[szt]")
     plt.ylabel("Zajętość [%]")
-    plt.title(
-        "Eksperyment nr.1 dla F-Fit z losowym wybieraniem ścieżki, zbiór POL12/demands_0"
-    )
+    plt.title("F-Fit z losowym wybieraniem ścieżki, zbiór pol12/demands_0")
     plt.legend()
     plt.savefig("img/exp_1_first_random_fit_pol12.png", dpi=150)
 
 
 if __name__ == "__main__":
-    # prepare_exp_first_fit_first_alloc()
-    # prepare_exp_last_fit_first_alloc()
-    # prepare_exp_random_first_fit_first_alloc()
+    """Eksperyment nr.1. Należy uruchomić wybraną opcję, wyniki będą dostępne w katalogu img/"""
+    prepare_exp_first_fit_first_alloc()
+    prepare_exp_last_fit_first_alloc()
     prepare_exp_best_fit_first_alloc()
+    prepare_exp_random_first_fit_first_alloc()
